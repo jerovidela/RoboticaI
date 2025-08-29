@@ -3,20 +3,12 @@ clear; clc; close all;
 assert(exist('SerialLink','class')==8, 'Falta el Robotics Toolbox en el path.');
 
 % === Longitudes genéricas ===
-L1 = 0.35;   % altura columna/base
-L2 = 0.30;   % brazo 1
-L3 = 0.25;   % brazo 2
-L4 = 0.20;   % desplazamiento muñeca
+L1 = 0.283;   % altura columna/base
+L2 = 0.629;   % brazo 1 (En el datasheet es L1)
+L3 = 0.444;   % brazo 2 (En el datasheet es L2)
+L4 = 0.220;   % desplazamiento muñeca
 L5 = 0.10;   % espaciador muñeca
 L6 = 0.10;   % brida/herramienta
-
-% === Links: sintaxis clásica Link([theta d a alpha]) ===
-L(1) = Link([0    L1   0     -pi/2]);
-L(2) = Link([0    0    L2     0   ]);
-L(3) = Link([0    0    L3     pi/2]);
-L(4) = Link([0    L4   0     -pi/2]);
-L(5) = Link([0    0    0      pi/2]);
-L(6) = Link([0    L6   0      0   ]);
 
 dh = [
     0   L1   0    -pi/2   0  
@@ -27,16 +19,37 @@ dh = [
     0   L6   0     0      0
 ];
 
+% % % === Links: sintaxis clásica Link([theta d a alpha]) ===
+% % L(1) = Link([0    L1   0     -pi/2]);
+% % L(2) = Link([0    0    L2     0   ]);
+% % L(3) = Link([0    0    L3     pi/2]);
+% % L(4) = Link([0    L4   0     -pi/2]);
+% % L(5) = Link([0    0    0      pi/2]);
+% % L(6) = Link([0    L6   0      0   ]);
+% % 
+% % %%% Forzar DH estándar %%%
+% % for i=1:6, L(i).mdh = 0; end
+% % 
+% % % Tipo de articulación (0 = rotacional)
+% % % Por alguna razón crashea
+% % % for i=1:6, L(i).sigma = 0; end
+% % 
+% % % === Offsets === %
+% % for i=1:6, L(i).offset = 0; end
 
-%%% Forzar DH estándar %%%
-for i=1:6, L(i).mdh = 0; end
 
-% Tipo de articulación (0 = rotacional)
-% Por alguna razón crashea
-% for i=1:6, L(i).sigma = 0; end
-
-% === Offsets === %
-for i=1:6, L(i).offset = 0; end
+% === Construcción de Links DESDE dh (RTB clásico) ===
+n = size(dh,1); L(1,n)=Link();
+for i=1:n
+    r = dh(i,:);
+    if numel(r)==5 && r(5)==1
+        L(i) = Link([r(1) r(2) r(3) r(4) 1]);   % prismática
+    else
+        L(i) = Link([r(1) r(2) r(3) r(4)]);     % rotacional
+    end
+    L(i).mdh = 0;
+    L(i).offset = 0;             % ajustá si tu cero mecánico es otro
+end
 
 % === Límites === %
 
@@ -65,4 +78,4 @@ q_home = deg2rad([0 -30 60 0 45 0]);
 
 assignin('base','R',R);
 assignin('base','workspace',workspace);
-assignin('base','q_home',q_home);
+assignin('base','dh',dh);

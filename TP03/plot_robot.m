@@ -7,6 +7,7 @@ run('robot.m');
 
 q = evalin('base','q_home');
 
+
 % 2) Figura + axes y cámara decentes
 fig = figure('Name','Escaner6R - Frames');
 ax  = axes('Parent', fig); hold(ax,'on'); grid(ax,'on');
@@ -21,9 +22,9 @@ camup(ax, [0 0 1]);
 camtarget(ax, [0 0 0.8]);
 
 % Límites visibles (ajusta a gusto)
-xlim(ax, [-0.5 1.2]);
-ylim(ax, [-0.5 0.5]);
-zlim(ax, [-0.3 1.0]);
+xlim(ax, [-0.5 2]);
+ylim(ax, [-1 1]);
+zlim(ax, [-0.3 1.5]);
 
 xlabel(ax,'X'); ylabel(ax,'Y'); zlabel(ax,'Z');
 title(ax,'Escaner6R - Frames');
@@ -63,5 +64,5 @@ axes(ax);
 trplot(T*R.tool, 'frame','T', 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
 
 % 5) Reafirmar límites
-xlim(ax, [-0.5 1.2]); ylim(ax, [-0.5 0.5]); zlim(ax, [-0.3 1.0]);
+xlim(ax, [-0.5 2]); ylim(ax, [-1 1]); zlim(ax, [-0.3 1.5]);
 drawnow;
