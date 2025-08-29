@@ -1,5 +1,5 @@
 % plot_robot_frames.m — Plot del robot + sistemas de referencia seleccionados
-clear; clc; close all;
+
 
 % 1) Cargar definición del robot del TF
 run('prueba.m');   % deja R, workspace y dh en memoria

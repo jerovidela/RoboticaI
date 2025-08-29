@@ -1,7 +1,3 @@
-% robot.m — Definición del brazo 6R (DH estándar, RTB clásico)
-clear; clc; close all;
-assert(exist('SerialLink','class')==8, 'Falta el Robotics Toolbox en el path.');
-
 % === Longitudes Genéricos ===
 
 % L1 = 0.283;   % altura columna/base
@@ -100,16 +96,7 @@ L(6).qlim = deg2rad([-350 350]);
 % === Crear robot === %
 R = SerialLink(L, 'name', 'Escaner6R');
 
-% Workspace para ploteo
-workspace = [-0.9 0.9 -0.9 0.9 -0.1 1.6];
 
-% === Pose de prueba === %
-
-q_home = deg2rad([0 -30 60 0 45 0]);
-% figure; 
-% R.plot(q_home, 'workspace', workspace, 'scale', 0.8, 'jointdiam', 1.1, 'notiles');
-% title('Escaner6R - Pose de prueba');
-% view(135,25); grid on; axis equal
 
 % Variables al workspace
 
