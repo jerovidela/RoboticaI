@@ -1,8 +1,10 @@
 % plot_robot_frames.m — RTB clásico, sin autoscale tóxico y sin 'thick'
 clear; clc; close all;
 
-% 1) Cargar el robot SIN dibujar nada en robot.m
-run('robot.m');                 % deja R, q_home, workspace en memoria
+% 1) Cargar el robot
+run('robot.m');                 
+% deja R, q_home, workspace en memoria
+
 q = evalin('base','q_home');
 
 % 2) Figura + axes y cámara decentes
@@ -33,23 +35,28 @@ R.plot(q, ...
     'noname','notiles','delay',0,'scale',0.8);
 
 % 4) Dibujar frames {0..n}
-sistemas = ones(1, R.n+1);  % todos
+
 LEN = 0.18;                 % tamaño de ejes de los frames
 LW  = 1.5;                  % grosor de línea numérico (no 'thick')
-
 T = R.base;
-if sistemas(1)
-    axes(ax);
-    trplot(T, 'frame','0', 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
-end
 
-for i = 1:R.n
-    T = T * R.links(i).A(q(i));
-    if sistemas(i+1)
-        axes(ax);
-        trplot(T, 'frame', num2str(i), 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
-    end
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comentar para sacar los ejes.%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% sistemas = ones(1, R.n+1);  % todos
+% if sistemas(1)
+%     axes(ax);
+%     trplot(T, 'frame','0', 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
+% end
+% 
+% for i = 1:R.n
+%     T = T * R.links(i).A(q(i));
+%     if sistemas(i+1)
+%         axes(ax);
+%         trplot(T, 'frame', num2str(i), 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
+%     end
+% end
 
 % Frame de la TOOL
 axes(ax);
