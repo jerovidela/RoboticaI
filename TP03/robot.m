@@ -2,21 +2,58 @@
 clear; clc; close all;
 assert(exist('SerialLink','class')==8, 'Falta el Robotics Toolbox en el path.');
 
-% === Longitudes genéricas ===
-L1 = 0.283;   % altura columna/base
-L2 = 0.629;   % brazo 1 (En el datasheet es L1)
-L3 = 0.444;   % brazo 2 (En el datasheet es L2)
-L4 = 0.220;   % desplazamiento muñeca
-L5 = 0.10;   % espaciador muñeca
-L6 = 0.10;   % brida/herramienta
+% === Longitudes Genéricos ===
 
+% L1 = 0.283;   % altura columna/base
+% L2 = 0.629;   % brazo 1 (En el datasheet es L1)
+% L3 = 0.444;   % brazo 2 (En el datasheet es L2)
+% L4 = 0.220;   % desplazamiento muñeca
+% L5 = 0.10;   % espaciador muñeca
+% L6 = 0.10;   % brida/herramienta
+% 
+% dh = [
+%     0   L1   0    -pi/2   0  
+%     0   0    L2    0      0
+%     0   0    L3    pi/2   0
+%     0   L4   0    -pi/2   0
+%     0   0    0     pi/2   0
+%     0   L6   0     0      0
+% ];
+
+
+% === Longitudes del ScanArm (Quantum 3.0 m) === %
+%%%%%%% MUÑECA ESFÉRICA %%%%%%%%
+% L1 = 0.755;   % tubo 1 (brazo superior)
+% L2 = 0.569;   % tubo 2 (antebrazo)
+% L3 = 0;       % no hay un "brazo 3" largo
+% L4 = 0;       % offset muñeca (pequeño, lo podés dejar en 0)
+% L5 = 0;       % espaciador muñeca
+% L6 = 0.10;    % herramienta (palpador)
+% 
+% dh = [
+%    0   0   0     +pi/2
+%    0   0   L1    0
+%    0   0   L2    0
+%    0   0   0     -pi/2
+%    0   0   0     +pi/2
+%    0   L6  0     0
+% ];
+
+%%%%% MUÑECA CON 2 DOF %%%%%%
+
+L1 = 0.755;    % tubo 1 (brazo)
+L2 = 0.569;    % tubo 2 (antebrazo)
+d_base = 0.0;  % opcional
+d_tool = 0.12; % opcional (palpador)
+
+% --- DH 6R: 2 ejes en muñeca (θ5, θ6) ---
 dh = [
-    0   L1   0    -pi/2   0  
-    0   0    L2    0      0
-    0   0    L3    pi/2   0
-    0   L4   0    -pi/2   0
-    0   0    0     pi/2   0
-    0   L6   0     0      0
+   0   d_base   0     +pi/2
+   0   0   L1    0
+   0   0   0    +pi/2
+   0   0   L2     0
+   0   0   0     -pi/2
+   0   d_tool  0     0
 ];
 
 % % % === Links: sintaxis clásica Link([theta d a alpha]) ===

@@ -24,7 +24,7 @@ camtarget(ax, [0 0 0.8]);
 % Límites visibles (ajusta a gusto)
 xlim(ax, [-0.5 2]);
 ylim(ax, [-1 1]);
-zlim(ax, [-0.3 1.5]);
+zlim(ax, [-2 1.5]);
 
 xlabel(ax,'X'); ylabel(ax,'Y'); zlabel(ax,'Z');
 title(ax,'Escaner6R - Frames');
@@ -64,5 +64,5 @@ axes(ax);
 trplot(T*R.tool, 'frame','T', 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
 
 % 5) Reafirmar límites
-xlim(ax, [-0.5 2]); ylim(ax, [-1 1]); zlim(ax, [-0.3 1.5]);
+xlim(ax, [-1 2]); ylim(ax, [-1 1]); zlim(ax, [-1 1.5]);
 drawnow;
