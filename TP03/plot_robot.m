@@ -1,6 +1,6 @@
 clear; clc; close all;
 workspace = [-0.9 0.9 -0.9 0.9 -0.1 1.6];
-robot_jero
+robot
 q = zeros(1, R.n);
 %q = [1,1,1,1,1,1];
 ejes = ones(1, R.n);
