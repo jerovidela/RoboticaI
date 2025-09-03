@@ -1,68 +1,42 @@
-% plot_robot_frames.m — RTB clásico, sin autoscale tóxico y sin 'thick'
 clear; clc; close all;
+workspace = [-0.9 0.9 -0.9 0.9 -0.1 1.6];
+robot_jero
+q = zeros(1, R.n);
+%q = [1,1,1,1,1,1];
+ejes = ones(1, R.n);
+%ejes = [1,0,0,0,0,1];
+sistemas = [1, ones(1, R.n)];   % 1 = mostrar {0..n}; ej: [0 0 1 1 ...] para últimos
+L = 0.12;                   % largo de los ejes dibujados
 
-% 1) Cargar el robot
-run('robot.m');                 
-% deja R, q_home, workspace en memoria
+figure('Color','w'); grid on; axis equal;
+view(135,25);
+R.plot(q, 'notiles', 'scale',0.7, 'jointdiam',0.6);
+R.teach();
+hold on;
 
-q = evalin('base','q_home');
+% ----- Sistema {0} (base) si se pide -----
+if numel(sistemas) >= 1 && sistemas(1) == 1
+    trplot(R.base, 'frame','0', 'length', L);
+end
 
-
-% 2) Figura + axes y cámara decentes
-fig = figure('Name','Escaner6R - Frames');
-ax  = axes('Parent', fig); hold(ax,'on'); grid(ax,'on');
-
-axis(ax, 'manual');             % congelar autoscale
-daspect(ax, [1 1 1]);           % proporción 1:1:1
-pbaspect(ax, [1 1 1]);
-axis(ax, 'vis3d');
-camproj(ax, 'orthographic');
-view(ax, 60, 25);
-camup(ax, [0 0 1]);
-camtarget(ax, [0 0 0.8]);
-
-% Límites visibles (ajusta a gusto)
-xlim(ax, [-0.5 2]);
-ylim(ax, [-1 1]);
-zlim(ax, [-2 1.5]);
-
-xlabel(ax,'X'); ylabel(ax,'Y'); zlabel(ax,'Z');
-title(ax,'Escaner6R - Frames');
-
-% 3) Dibujar el robot en ESTE axes
-axes(ax);
-R.plot(q, ...
-    'jointdiam', 0.5, ...
-    'noname','notiles','delay',0,'scale',0.8);
-
-% 4) Dibujar frames {0..n}
-
-LEN = 0.18;                 % tamaño de ejes de los frames
-LW  = 1.5;                  % grosor de línea numérico (no 'thick')
+% ----- Recorrer y dibujar frames {1..n} -----
 T = R.base;
+for i = 1:R.n
+    Ai = R.A(i, q);   % <<< IMPORTANTE: pasar q COMPLETO
+    T  = T * Ai;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Comentar para sacar los ejes.%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Mostrar frame {i} si lo pide "ejes" (máscara de articulaciones)
+    if i <= numel(ejes) && ejes(i) == 1
+        trplot(T, 'frame', num2str(i), 'length', L);
+    end
 
-% sistemas = ones(1, R.n+1);  % todos
-% if sistemas(1)
-%     axes(ax);
-%     trplot(T, 'frame','0', 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
-% end
-% 
-% for i = 1:R.n
-%     T = T * R.links(i).A(q(i));
-%     if sistemas(i+1)
-%         axes(ax);
-%         trplot(T, 'frame', num2str(i), 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
-%     end
-% end
+    % Mostrar frame {i} si lo pide "sistemas" (máscara de {0..n})
+    if i+1 <= numel(sistemas) && sistemas(i+1) == 1
+        trplot(T, 'frame', num2str(i), 'length', L);
+    end
+end
 
-% Frame de la TOOL
-axes(ax);
-trplot(T*R.tool, 'frame','T', 'length',LEN, 'rgb', 'arrow', 'LineWidth', LW);
+% (Opcional) Mostrar el tool como {T}
+trplot(T * R.tool, 'frame','T', 'length', L);
+title('Frames seleccionados');
 
-% 5) Reafirmar límites
-xlim(ax, [-1 2]); ylim(ax, [-1 1]); zlim(ax, [-1 1.5]);
-drawnow;
