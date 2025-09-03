@@ -1,4 +1,5 @@
 %% Definicion de los parametros del robot
+d_tool = 0.220; % Definición explícita del desplazamiento de la herramienta puede cambiar segun la herramienta
 dh = [ ...
     0       0.000   0.000    -pi/2   0;   % Joint 1
     0       0.000   0.400     0      0;   % Joint 2
@@ -16,7 +17,7 @@ qlim = deg2rad([ ...
    -360  360]);  % q6
 offset = deg2rad([0 -90 90 0 0 0]);
 base = transl(0,0,0);
-tool = transl(0,0,0);
+tool = transl(d_tool,0,0);
 
 %% Definicion del robot
 R = SerialLink(dh);
