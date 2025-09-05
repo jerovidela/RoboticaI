@@ -1,94 +1,133 @@
-function esp_trab()
-% ESP_TRAB - Calcula y grafica la superficie de trabajo del robot.
-% Genera una representación precisa basada en el barrido de los límites articulares.
-% Requiere que el robot esté definido en el workspace (ejecutar 'robot.m' antes).
+clear; clc; close all;
 
-    % === Cargar el robot del workspace ===
-    R = evalin('base', 'R');
+%% --- Cargar definición del robot
+robot; % crea el objeto R
 
-    % === Límites articulares ===
-    qlims = R.qlim;
+%% --- Workspace XZ (tramos separados)
+q6 = deg2rad(180);
+q5 = deg2rad(-90);
+q4 = deg2rad(0);
+q3 = deg2rad(0);
+q2= deg2rad(120);
+q1 = deg2rad(0);
 
-    % === Parámetros de barrido ===
-    numSamples = 300; % Más puntos para mayor suavidad
-
-    % === Superficie XY (Vista Superior) ===
-    % Generar la forma de dona
-
-    % 1. Alcance Máximo (Contorno exterior)
-    q_ext = [0, qlims(2,2), qlims(3,1), 0, 0, 0]; 
-    pos_ext_xy = zeros(numSamples, 2);
-    q1_range = linspace(qlims(1,1), qlims(1,2), numSamples);
-    
-    for i = 1:numSamples
-        q_ext(1) = q1_range(i);
-        T = R.fkine(q_ext);
-        pos = transl(T)';
-        pos_ext_xy(i,:) = [pos(1), pos(2)];
-    end
-
-    % 2. Alcance Mínimo (Contorno interior)
-    q_min = [0, qlims(2,1), qlims(3,2), 0, 0, 0]; 
-    pos_min_xy = zeros(numSamples, 2);
-    
-    for i = 1:numSamples
-        q_min(1) = q1_range(i);
-        T = R.fkine(q_min);
-        pos = transl(T)';
-        pos_min_xy(i,:) = [pos(1), pos(2)];
-    end
-
-    % --- Gráfico XY ---
-    figure('Name','Espacio de Trabajo - Vista Superior (XY)');
-    hold on;
-    fill(pos_ext_xy(:,1), pos_ext_xy(:,2), [0.7 0.7 0.7], 'FaceAlpha', 0.5); % Gris
-    fill(pos_min_xy(:,1), pos_min_xy(:,2), 'w', 'FaceAlpha', 1);
-    plot(pos_ext_xy(:,1), pos_ext_xy(:,2), 'k-', 'LineWidth', 1.5);
-    plot(pos_min_xy(:,1), pos_min_xy(:,2), 'k--', 'LineWidth', 1);
-    xlabel('X [m]'); ylabel('Y [m]');
-    title('Espacio de Trabajo - Plano XY (Anillo)');
-    grid on; axis equal;
-    hold off;
-    
-    % === Superficie XZ (Vista Lateral - como la imagen de referencia) ===
-    figure('Name','Espacio de Trabajo - Vista Lateral (XZ)');
-    hold on;
-
-    % Fijar q1, q4, q5, q6 para una vista lateral (normalmente q1=0 o q1=pi/2)
-    % Se asume q1=0 para este perfil. q4, q5, q6 en su posición neutra o extendida.
-    q_fixed_xz = [0, 0, 0, 0, 0, 0]; 
-    q_fixed_xz(4) = 0; % q4 a 0 para simplificar el perfil, o extenderlo
-    q_fixed_xz(5) = 0; % q5 a 0
-    q_fixed_xz(6) = 0; % q6 a 0
-
-    % Generar un mallado de puntos variando q2 y q3
-    q2_range = linspace(qlims(2,1), qlims(2,2), numSamples);
-    q3_range = linspace(qlims(3,1), qlims(3,2), numSamples);
-    
-    pos_all_xz = [];
-
-    for i = 1:numSamples
-        for j = 1:numSamples
-            q_fixed_xz(2) = q2_range(i);
-            q_fixed_xz(3) = q3_range(j);
-            T = R.fkine(q_fixed_xz);
-            pos = transl(T)';
-            pos_all_xz = [pos_all_xz; pos(1), pos(3)];
-        end
-    end
-
-    % Eliminar puntos duplicados o muy cercanos (opcional, para convhull)
-    % pos_all_xz = unique(pos_all_xz, 'rows'); % Descomentar si hay problemas de rendimiento
-
-    % Calcular el envoltorio convexo de todos los puntos generados en XZ
-    k_xz = convhull(pos_all_xz(:,1), pos_all_xz(:,2));
-    
-    % Rellenar el área de trabajo XZ
-    fill(pos_all_xz(k_xz, 1), pos_all_xz(k_xz, 2), [0.7 0.7 0.7], 'FaceAlpha', 0.5); % Gris
-    plot(pos_all_xz(k_xz, 1), pos_all_xz(k_xz, 2), 'k-', 'LineWidth', 1.5); % Contorno negro
-    
-    xlabel('X [m]'); ylabel('Z [m]');
-    title('Espacio de Trabajo - Plano XZ (Vista Lateral)');
-    grid on; axis equal;
-    hold off;
+% Tramo 1: q3 de -10 a -90
+q3_range = deg2rad(-10:-5:-90);
+ptsXZ_tramo1 = [];
+for q3 = q3_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXZ_tramo1(end+1,:) = T.t';
 end
+
+% Tramo 2: q2 de 120 a 0
+q2_range = deg2rad(120:-5:-15);
+ptsXZ_tramo2 = [];
+for q2 = q2_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXZ_tramo2(end+1,:) = T.t';
+end
+% Tramo 3: q6 de -180 a 0
+q6_range = deg2rad(-180:15:0);
+ptsXZ_tramo3 = [];
+for q6 = q6_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXZ_tramo3(end+1,:) = T.t';
+end
+
+% Tramo 4: q2 de 0 a -120
+q2_range = deg2rad(0:-5:-120);
+ptsXZ_tramo4 = [];
+for q2 = q2_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXZ_tramo4(end+1,:) = T.t';
+end
+% Tramo 5: q3 de -90 a -170
+q3_range = deg2rad(-90:-5:-170);
+ptsXZ_tramo5 = [];
+for q3 = q3_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXZ_tramo5(end+1,:) = T.t';
+end
+% Unir tramos sin duplicar puntos
+ptsXZ = [ptsXZ_tramo1; ptsXZ_tramo2; ptsXZ_tramo3; ptsXZ_tramo4; ptsXZ_tramo5];
+
+% Graficar XZ
+figure;
+fill(ptsXZ(:,1), ptsXZ(:,3), 'r', 'FaceAlpha',0.3, 'EdgeColor','r','LineWidth',1.2);
+grid on; axis equal;
+xlabel('X [m]'); ylabel('Z [m]');
+title('Area de trabajo del workspace XZ');
+
+%% --- Workspace XY (tramos separados)
+q2 = deg2rad(90);
+q3 = deg2rad(-90);
+q4 = deg2rad(0);
+q5 = deg2rad(-90);
+q6 = deg2rad(270);
+
+%Tramo 0: q4 de -50 a 0
+q4_range = deg2rad(-50:5:0);
+ptsXY_tramo4 = [];
+for q4 = q4_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXY_tramo4(end+1,:) = T.t';
+end
+
+% Tramo 1: q1 de 170 a -170
+q1_range = deg2rad(170:-5:-170);
+ptsXY_tramo1 = [];
+for q1 = q1_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXY_tramo1(end+1,:) = T.t';
+end
+
+% Tramo 2: q6=270 a 90
+q6_range = deg2rad(270:-5:90);
+ptsXY_tramo2 = [];
+for q6 = q6_range
+    q = [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXY_tramo2(end+1,:) = T.t';
+end
+
+% Tramo 3: q4 de 0 50
+q4_range = deg2rad(0:5:50);
+ptsXY_tramo3 = [];
+for q4 = q4_range
+    q= [q1 q2 q3 q4 q5 q6];
+    T = R.fkine(q);
+    ptsXY_tramo3(end+1,:)= T.t';
+end
+% Unir tramos
+ptsXY = [ptsXY_tramo1;ptsXY_tramo2];
+
+%No se unen los tramos 4 y 3 porque distorsionan el codigo, pero es
+%practcamente la misma fomrma
+
+% --- Definir hueco circular ---
+dam = 0.1; % diámetro [m]
+r = dam/2;
+theta = linspace(0,2*pi,200);
+circle = [r*cos(theta') r*sin(theta')];
+
+% Graficar área XY con hueco
+figure;
+fill(ptsXY(:,1), ptsXY(:,2), 'b', 'FaceAlpha',0.3, 'EdgeColor','b','LineWidth',1.2); hold on;
+fill(circle(:,1), circle(:,2), 'w', 'EdgeColor','k','LineWidth',1); % hueco central
+grid on; axis equal;
+xlabel('X [m]'); ylabel('Y [m]');
+title('Área de trabajo XY (rellena con hueco central)');
+
+% Aclaraciones sobre el area de trabajo del robot: como usamos el simulador
+% plot_robot para ver hasta donde puede llegar la punta del efector final,
+% este nos permite sobre poner los ejes, permitiendo que llegue incluso al
+% centro de la base, en la realidad esto no es posible, por lo que tomando
+% en cuenta las dimenciones de diametro de los ejes hemos extraido un area
+% de trabajo que no es posible en la realidad.
