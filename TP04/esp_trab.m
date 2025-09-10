@@ -123,7 +123,7 @@ fill(ptsXY(:,1), ptsXY(:,2), 'b', 'FaceAlpha',0.3, 'EdgeColor','b','LineWidth',1
 fill(circle(:,1), circle(:,2), 'w', 'EdgeColor','k','LineWidth',1); % hueco central
 grid on; axis equal;
 xlabel('X [m]'); ylabel('Y [m]');
-title('Área de trabajo XY (rellena con hueco central)');
+title('Área de trabajo XY ');
 
 % Aclaraciones sobre el area de trabajo del robot: como usamos el simulador
 % plot_robot para ver hasta donde puede llegar la punta del efector final,
