@@ -31,6 +31,7 @@ while flag1
     p(1, 3) = input("Coordenada x: ");
     p(2, 3) = input("Coordenada y: ");
     gamma = input("Ángulo de orientación [rad]: ");
+    gamma = wrapToPi(gamma);
 
     % Vector desde el origen hasta el punto pero con complejos (porque
     % me gustan)
@@ -58,18 +59,23 @@ while flag1
         FueraAT(p, a);
         pause;
     elseif abs(abs(z4) - A13) < tol
-        if abs(gamma - angle(z3)) < tol
+        if abs(gamma - angle(z4)) < tol
             % Hay solución única
             % Brazo estirado
             fprintf("\n|------------------------|\n")
             fprintf("| Existe Solución Única. |")
             fprintf("\n|------------------------|\n")
 
+            q(1, 1) = gamma;
+            q(1, 2) = gamma;
+
             for i = 2:3
                 for j = 1:2
                     q(j, i) = 0;
                 end
             end
+
+            
 
             fprintf("\nSolución (q1, q2, q3): (%.4f, %.4f, %.4f)\n", q(1,1), q(2,1), q(3,1))
             SolucionUnica(p, a)
@@ -85,7 +91,6 @@ while flag1
                 "por lo que no puede tener el ángulo pedido.")
 
             SolucionUnica(p, a); ax = gca; hold(ax,'on');
-            gamma = wrapToPi(gamma);
 
             T = findall(ax,'Type','text');
             idx = strcmp(get(T,'String'),'Dentro del Area de Trabajo');  % busca el que diga "\theta"
@@ -121,6 +126,7 @@ while flag1
             draw_arc(ax, z4, 0, angle(u_hat), 0.25, 1, sprintf('$\\theta = %.2f^{\\circ}$', rad2deg(angle(u_hat))))
             draw_arc(ax, z4, 0, gamma, 0.25, 1, sprintf('$\\gamma = %.2f^{\\circ}$', rad2deg(gamma)))
 
+            
             pause;
         end
     elseif abs(z4) < (a(1) + a(2) - a(3))
@@ -155,9 +161,12 @@ while flag1
         subplot(1,2,2);
         alcanzable(q(:,2), a, gamma, gca, 'showAngles');
         title('Solución 2');
+        
+        fprintf("\n(Toca cualquier tecla para continuar)\n\n")
         pause;
 
     else
+
         % Caso intermedio: a1+a2-a3 < ||p|| < a1+a2+a3, pero hay que chequear gamma
         rho   = abs(z4);             % ||p||
         theta = angle(z4);           % arg(p)
@@ -207,21 +216,42 @@ while flag1
             q(:,1) = [q(1, 1); q(2, 1); q(3, 1)];
             q(:,2) = [q(1, 2); q(2, 2); q(3, 1)];
 
-            fprintf("\nSolución 1: (%.4f, %.4f, %.4f) [rad]", q(:,1))
-            fprintf("\nSolución 2: (%.4f, %.4f, %.4f) [rad]\n", q(:,2))
+            if abs( abs(z4) - (a(1) + a(2) - a(3)) ) < tol
+                % Caso donde existe 1 solución
+                fprintf("\n|------------------------|\n")
+                fprintf("| Existe Solución Única. |")
+                fprintf("\n|------------------------|\n")
 
-            % --- Gráfica como en tus otros casos ---
-            figure; clf;
+                fprintf("\nSolución 1: (%.4f, %.4f, %.4f) [rad]", q(:,1))
+                
+                % --- Gráfica ---
+                figure; clf;
+                alcanzable(q(:,1), a, gamma, gca, 'showAngles');
+                title('Solución 1'); grid on;
 
-            subplot(1,2,1);
-            alcanzable(q(:,1), a, gamma, gca, 'showAngles');
-            title('Solución 1'); grid on;
+            else
+                % Caso donde existen 2 soluciones
+                fprintf("\n|------------------------------|\n")
+                fprintf("| Existe un Par de Soluciones.   |")
+                fprintf("\n|------------------------------|\n")
 
-            subplot(1,2,2);
-            alcanzable(q(:,2), a, gamma, gca, 'showAngles');
-            title('Solución 2'); grid on;
+                fprintf("\nSolución 1: (%.4f, %.4f, %.4f) [rad]", q(:,1))
+                fprintf("\nSolución 2: (%.4f, %.4f, %.4f) [rad]\n", q(:,2))
+    
+                % --- Gráfica ---
+                figure; clf;
+    
+                subplot(1,2,1);
+                alcanzable(q(:,1), a, gamma, gca, 'showAngles');
+                title('Solución 1'); grid on;
+    
+                subplot(1,2,2);
+                alcanzable(q(:,2), a, gamma, gca, 'showAngles');
+                title('Solución 2'); grid on;
+            end
         end
 
+        fprintf("\n(Toca cualquier tecla para continuar)\n\n")
         pause;
     end
 
@@ -252,7 +282,7 @@ function h = FueraAT(p, a)
         for n = 1:s
             M = a(n) + M;
         end
-        z(s+1) = M*exp(1i*atan2(p(3, 2),p(3, 1)));
+        z(s+1) = M*exp(1i*atan2(p(2, 3),p(1, 3)));
     end
     
     % Brazo totalmente estirado
@@ -264,12 +294,12 @@ function h = FueraAT(p, a)
     end
     
     % Punto objetivo
-    plot(ax, p(3, 1), p(3, 2), 'x', 'Color', '#77AC30', 'MarkerSize', 15, 'LineWidth', 3);
-    text(ax, p(3, 1), p(3, 2), '  objetivo', 'Color','r', 'FontSize',9);
+    plot(ax, p(1, 3), p(2, 3), 'x', 'Color', '#77AC30', 'MarkerSize', 15, 'LineWidth', 3);
+    text(ax, p(1, 3), p(2, 3), '  objetivo', 'Color','r', 'FontSize',9);
     draw_circle(ax, z(1), A13, 'k--', '$\rm Radio del brazo$');
     
     
-    xlim(ax, [-p(3, 1)-1 p(3, 1)+1]); ylim(ax, [-p(3, 2)-1 p(3, 2)+1]);
+    xlim(ax, [-p(1, 3)-1 p(1, 3)+1]); ylim(ax, [-p(2, 3)-1 p(2, 3)+1]);
     
     fprintf("\n(Toca cualquier tecla para continuar)\n\n")
 
@@ -288,7 +318,7 @@ function h = SolucionUnica(p, a)
         for n = 1:s
             M = a(n) + M;
         end
-        z(s+1) = M*exp(1i*atan2(p(3, 2),p(3, 1)));
+        z(s+1) = M*exp(1i*atan2(p(2, 3),p(1, 3)));
     end
 
     % Brazo totalmente estirado
@@ -300,8 +330,8 @@ function h = SolucionUnica(p, a)
     end
 
     % Punto objetivo
-    plot(ax, p(3, 1), p(3, 2), '.', 'Color', '#77AC30', 'MarkerSize', 15, 'LineWidth', 2);
-    text(ax, p(3, 1), p(3, 2), '  objetivo', 'Color','#77AC30', 'FontSize',9);
+    plot(ax, p(1, 3), p(2, 3), '.', 'Color', '#77AC30', 'MarkerSize', 15, 'LineWidth', 2);
+    text(ax, p(1, 3), p(2, 3), '  objetivo', 'Color','#77AC30', 'FontSize',9);
 
     q1 = rad2deg(angle(z(2)));
     draw_arc(ax, z(1), 0, angle(z(2)), a(1)/3, 0, sprintf('$q_{1} = %.4f^{\\circ}$', q1))
@@ -314,8 +344,8 @@ function h = SolucionUnica(p, a)
     angle_start = angle(z(4)) - pi/9;
     draw_arc(ax, z(1), angle_start, 2*pi/9, A13, 1, sprintf('Dentro del Area de Trabajo'));
     
-
-    xlim(ax, [-p(3, 1)-1 p(3, 1)+1]); ylim(ax, [-p(3, 2)-1 p(3, 2)+1]);
+    x_lim = abs(real(z(4))) + 1; y_lim = abs(imag(z(4))) + 1;
+    xlim(ax, [-x_lim x_lim]); ylim(ax, [-y_lim y_lim]);
 
     fprintf("\n(Toca cualquier tecla para continuar)\n\n")
 
@@ -353,7 +383,7 @@ function alcanzable(q, a, gamma, ax, varargin)
 
     % juntas
     plot(ax, real([z0 z1 z2 z3]), imag([z0 z1 z2 z3]), ...
-        'ro', 'MarkerFaceColor','r', 'MarkerSize',6);
+        'Or', 'MarkerSize', 7, 'LineWidth', 1);
 
     % opcional: dibujar arcos de ángulos
     if any(strcmp(varargin,'showAngles'))
@@ -397,7 +427,8 @@ function draw_arc(ax, center, startAng, deltaAng, radius, as, labelStr)
 % Dibuja un arco de ángulo 'deltaAng' desde 'startAng' con radio 'radius'
 % y rotula en el medio del arco.
 %
-    if radius <= 0 || abs(deltaAng) < 1e-6, return; end
+    if radius <= 0, return; end
+    
     n = max(12, ceil(abs(deltaAng)*30));        % densidad decente
     t0 = startAng;
     t1 = startAng + deltaAng;
@@ -410,6 +441,15 @@ function draw_arc(ax, center, startAng, deltaAng, radius, as, labelStr)
     xm = real(center) + (radius+0.06*radius)*cos(mid);
     ym = imag(center) + (radius+0.06*radius)*sin(mid);
 
+    if abs(deltaAng) < 1e-6
+        if nargin >= 7 && ~isempty(labelStr)
+            interp = 'tex';
+            if contains(labelStr, '$'), interp = 'latex'; end
+            text(ax, xm, ym, labelStr, 'FontSize', 12, 'Color', 'k', 'Interpreter', interp);
+        end
+        return;
+    end
+
     if (nargin >= 6) && (as == 1)
         plot(ax, xm, ym, '--', 'MarkerSize', 8);
         plot(ax, xx, yy, '--', 'LineWidth', 1);
@@ -417,9 +457,6 @@ function draw_arc(ax, center, startAng, deltaAng, radius, as, labelStr)
         plot(ax, xm, ym, 'k.', 'MarkerSize', 8);
         plot(ax, xx, yy, 'k-', 'LineWidth', 1);
     end
-
-
-    
 
     if nargin >= 7 && ~isempty(labelStr)
         interp = 'tex';
@@ -497,5 +534,4 @@ function gamma = TdC(a, b, c)
     val = (a^2 + b^2 - c^2) / (2*a*b);
     val = min(max(val, -1), 1); % clamp para evitar problemas numéricos
     gamma = acos(val);
-end
-
+end 
