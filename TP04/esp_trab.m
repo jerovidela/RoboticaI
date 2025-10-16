@@ -112,15 +112,15 @@ ptsXY = [ptsXY_tramo1;ptsXY_tramo2];
 %practcamente la misma fomrma
 
 % --- Definir hueco circular ---
-dam = 0.1; % diámetro [m]
-r = dam/2;
-theta = linspace(0,2*pi,200);
-circle = [r*cos(theta') r*sin(theta')];
+%dam = 0.1; % diámetro [m]
+%r = dam/2;
+%theta = linspace(0,2*pi,200);
+%circle = [r*cos(theta') r*sin(theta')];
 
 % Graficar área XY con hueco
 figure;
 fill(ptsXY(:,1), ptsXY(:,2), 'b', 'FaceAlpha',0.3, 'EdgeColor','b','LineWidth',1.2); hold on;
-fill(circle(:,1), circle(:,2), 'w', 'EdgeColor','k','LineWidth',1); % hueco central
+%fill(circle(:,1), circle(:,2), 'w', 'EdgeColor','k','LineWidth',1); % hueco central
 grid on; axis equal;
 xlabel('X [m]'); ylabel('Y [m]');
 title('Área de trabajo XY ');

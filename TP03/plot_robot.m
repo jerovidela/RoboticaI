@@ -10,7 +10,7 @@ L = 0.12;                   % largo de los ejes dibujados
 
 figure('Color','w'); grid on; axis equal;
 view(135,25);
-R.plot(q, 'notiles', 'scale',0.7, 'jointdiam',0.6);
+R.plot(q, 'notiles', 'scale',0.8, 'jointdiam',0.6);
 R.teach();
 hold on;
 

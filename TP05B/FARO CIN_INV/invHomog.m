@@ -12,6 +12,7 @@ function Tinv = invHomog(T)
     p = M(1:3,4);
     Rt = R.';
     Tinv = [Rt, -Rt*p; 0 0 0 1];
+
 end
 % INVHOMOG
 % Función auxiliar que calcula la INVERSA de una matriz homogénea.
