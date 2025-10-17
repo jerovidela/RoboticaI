@@ -17,7 +17,7 @@ qlim = deg2rad([ ...
    -360  360]);  % q6
 offset = deg2rad([0 -270 0 0 0 0]);  % el offset de q2 representa el codo en nuestro robot
 base = transl(0,0,0);
-tool = transl(0,0,d_tool);
+tool = transl(0,0,-d_tool);
 
 %% Definicion del robot
 R = SerialLink(dh);

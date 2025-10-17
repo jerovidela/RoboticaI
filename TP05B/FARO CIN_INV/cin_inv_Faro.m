@@ -37,13 +37,13 @@ R.offset=zeros(6,1);
 
         q2a=B-real(G);
         q2b=B+real(G);
-        q2=[q2a,q2b];
+        q2=[q2a,q2b]-2*pi;
 
        for k=1:2 
            for j=1:2
                soluciones(2,idx)=q2(k);
                T2=R.links(2).A(q2(k)).double;
-               p_2 = invHomog(T2)*[p;1];  %p respecto de S2
+               p_2 = invHomog(T2)*p_1;  %p respecto de S2
                q3 = atan2(p_2(2),p_2(1));
                soluciones(3,idx)=q3;
                idx=idx+1;
@@ -75,7 +75,7 @@ if mejor
     [~,pos] = min(normas);
     Q = soluciones(:, pos);
 else
-    Q = soluciones;
+   Q = soluciones;
 end
 end
 
