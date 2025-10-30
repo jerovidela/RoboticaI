@@ -64,19 +64,10 @@ for i=1:2:7
 end
 
 R.offset = offsets;
-% ---> AÑADIR ESTA VERIFICACIÓN/CORRECCIÓN <---
-offset_local = R.offset; % Copiar a variable local
-if size(offset_local, 1) == 1 % Si es fila (1xN)
-    offset_local = offset_local.'; % Transponer a columna (Nx1)
-end
-% Asegurarse que tenga N filas (si no, hay error)
-if size(offset_local, 1) ~= R.n
-     error('Dimensiones del offset (%s) no coinciden con N=%d articulaciones.', mat2str(size(offset_local)), R.n);
-end
-% ---> FIN DE LÍNEAS A AÑADIR <---
-soluciones = soluciones - repmat(R.offset, 1, 8);
+soluciones = soluciones - R.offset' * ones(1,8);
+
 if mejor
-    Qaux = soluciones - repmat(q0, 1, 8);
+    Qaux = soluciones  - q0.' * ones(1,8);
     normas = zeros(1,8);
     for i=1:8
         normas(i) = norm(Qaux(:,i));
@@ -140,4 +131,5 @@ end
 % En pocas palabras:
 %   A partir de una posición/orientación deseada del extremo,
 %   calcula los ángulos de las articulaciones que permiten alcanzarla.
+
 

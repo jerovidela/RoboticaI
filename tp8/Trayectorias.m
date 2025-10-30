@@ -11,8 +11,8 @@ end
 
 %% --- 1. Definir Puntos Cartesianos y Articulares Clave ---
 % --- Puntos Articulares (q) ---
-q_start = deg2rad([0, 0, -54.4, 3.8, -55.2, 0]);    
-q_approach = deg2rad([0, 0, -3.8, -26.4, 0, 0]);    
+q_start = deg2rad([0, 20, -20, 0, 45, 0]);
+q_approach = deg2rad([0, 40, -30, 0, 45, 0]);
 
 % --- Parámetros de la Tarea ---
 delta_z = 0.001; % Distancia vertical para simular contacto (1 mm)
@@ -63,18 +63,20 @@ T_retract = rt2tr(R_palpador_final, T_retract_pos);
 
 % Calcular Puntos Articulares (q) faltantes usando Cinemática Inversa
 try
-    % VERIFICAR DIMENSIONES DE LA SEMILLA ANTES DE LLAMAR
-    q_approach_col = q_approach.'; % Asegurar que la semilla es columna
-    disp(['Dimensiones de q_approach pasada a cin_inv_Faro (llamada 1): ', num2str(size(q_approach_col))]);
+    disp(['Dimensiones de q_approach pasada a cin_inv_Faro (llamada 1): ', num2str(size(q_approach))]);
 
-    q_contact_start = cin_inv_Faro(R, T_contact_start, q_approach_col, true); % Pasar columna
-    disp(['Dimensiones de q_contact_start devuelta: ', num2str(size(q_contact_start))]); % Debería ser 6x1
+    q_contact_start = cin_inv_Faro(R, T_contact_start, q_approach, true); % Pasar fila
+    disp(['Dimensiones de q_contact_start devuelta: ', num2str(size(q_contact_start))]); % Debería ser 1x6
 
-    q_contact_end = cin_inv_Faro(R, T_contact_end, q_contact_start, true); % Semilla debe ser 6x1
-    disp(['Dimensiones de q_contact_end devuelta: ', num2str(size(q_contact_end))]); % Debería ser 6x1
+    q_contact_start = q_contact_start.';
 
-    q_retract = cin_inv_Faro(R, T_retract, q_contact_end, true); % Semilla debe ser 6x1
-    disp(['Dimensiones de q_retract devuelta: ', num2str(size(q_retract))]); % Debería ser 6x1
+    q_contact_end = cin_inv_Faro(R, T_contact_end, q_contact_start, true); % Semilla debe ser 1x6
+    disp(['Dimensiones de q_contact_end devuelta: ', num2str(size(q_contact_end))]); % Debería ser 1x6
+
+    q_contact_end = q_contact_end.';
+
+    q_retract = cin_inv_Faro(R, T_retract, q_contact_end, true); % Semilla debe ser 1x6
+    disp(['Dimensiones de q_retract devuelta: ', num2str(size(q_retract))]); % Debería ser 1x6
 
 catch ME
     fprintf('!!! Error capturado DENTRO de cin_inv_Faro !!!\n');
@@ -146,7 +148,7 @@ accA = derivada(velA, t_total');
 %% --- 3. Implementación B: Interpolación Mixta (jtraj + ctraj) ---
 % Comentado para probar primero la Implementación A  no mw funciona :(
 % Descomenta esta sección una vez que la Implementación A funcione
-%{
+
 fprintf('--- Calculando Método B (Mixto jtraj/ctraj) ---\n');
 % Segmento 1: jtraj (Start -> Approach)
 [qB1, qdB1, qddB1] = jtraj(q_start, q_approach, N1);
@@ -159,7 +161,7 @@ qB3 = zeros(N2, R.n);
 q_seed_B = q_contact_start.'; % Semilla inicial es el final del segmento anterior (fila)
 for i = 1:N2
     try
-        q_sol = cin_inv_Faro(R, T_segmento3(:,:,i), q_seed_B.', true); % Pasar semilla como COLUMNA
+        q_sol = cin_inv_Faro(R(1:3,1:3), T_segmento3(:,:,i), q_seed_B.', true); % Pasar semilla como COLUMNA
         if ~isempty(q_sol) && ~any(isnan(q_sol))
              if size(q_sol, 1) > 1; q_sol = q_sol.'; end % Asegurar q_sol sea FILA para guardar y semilla
              qB3(i,:) = q_sol;
@@ -199,7 +201,7 @@ for i = 1:total_puntos_B
 end
 velB = derivada(posB, t_total');
 accB = derivada(velB, t_total');
-%}
+
 
 %% --- 4. Animación ---
 figure('Name', 'Animación Método A (Articular)');
@@ -207,11 +209,11 @@ R.plot(qA);
 title('Animación Método A (Todo jtraj)');
 
 % Descomenta cuando Método B funcione
-%{
+
 figure('Name', 'Animación Método B (Mixto)');
 R.plot(qB);
 title('Animación Método B (jtraj + ctraj)');
-%}
+
 
 %% --- 5. Gráficas Comparativas ---
 % Ajustar vector de tiempo si B está comentado
