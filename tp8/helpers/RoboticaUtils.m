@@ -115,7 +115,8 @@ classdef RoboticaUtils
             end
 
             % Compensar offset del modelo
-            soluciones = soluciones - repmat(R.offset, 1, 8);
+            % soluciones = soluciones - repmat(R.offset, 1, 8);
+            soluciones = soluciones - repmat(offset_local, 1, size(soluciones,2));
 
             if mejor
                 Qaux = soluciones - repmat(q0, 1, 8);
