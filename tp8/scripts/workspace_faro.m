@@ -1,4 +1,7 @@
 clear; clc; close all;
+% Asegurar path a la raíz de tp8 y helpers
+baseDir = fileparts(fileparts(mfilename('fullpath')));
+addpath(baseDir, fullfile(baseDir, 'helpers'));
 
 %% --- Cargar definición del robot
 robot; % crea el objeto R
@@ -108,8 +111,7 @@ end
 % Unir tramos
 ptsXY = [ptsXY_tramo1;ptsXY_tramo2];
 
-%No se unen los tramos 4 y 3 porque distorsionan el codigo, pero es
-%practcamente la misma fomrma
+%No se unen los tramos 4 y 3 porque distorsionan el codigo
 
 % --- Definir hueco circular ---
 dam = 0.1; % diámetro [m]
@@ -124,10 +126,3 @@ fill(circle(:,1), circle(:,2), 'w', 'EdgeColor','k','LineWidth',1); % hueco cent
 grid on; axis equal;
 xlabel('X [m]'); ylabel('Y [m]');
 title('Área de trabajo XY (rellena con hueco central)');
-
-% Aclaraciones sobre el area de trabajo del robot: como usamos el simulador
-% plot_robot para ver hasta donde puede llegar la punta del efector final,
-% este nos permite sobre poner los ejes, permitiendo que llegue incluso al
-% centro de la base, en la realidad esto no es posible, por lo que tomando
-% en cuenta las dimenciones de diametro de los ejes hemos extraido un area
-% de trabajo que no es posible en la realidad.

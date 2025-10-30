@@ -1,6 +1,9 @@
 % --- EJERCICIO FINAL FARO SCANARM ---
 clear; clc; close all;
 clear functions;
+% Asegurar path a la raíz de tp8 y helpers
+baseDir = fileparts(fileparts(mfilename('fullpath')));
+addpath(baseDir, fullfile(baseDir, 'helpers'));
 %% --- 0. Cargar Robot y Parámetros ---
 try
     robot; % Carga R desde robots/robot_faro.m mediante el wrapper
