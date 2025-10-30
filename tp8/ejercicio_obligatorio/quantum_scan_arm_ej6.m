@@ -114,6 +114,28 @@ end
 velB = RoboticaUtils.derivada(posB, tB');
 accB = RoboticaUtils.derivada(velB, tB');
 
+%% Animaciones previas a los gráficos
+fprintf('\n=== Animación Método A (jtraj) ===\n');
+figA = figure('Name','Animación Método A (jtraj)');
+try
+    R.plot(qA, 'delay', dt, 'trail', '-');
+catch
+    % En caso de versión diferente del toolbox, usar plot simple
+    R.plot(qA);
+end
+title('Animación Método A (jtraj)');
+maximize_and_wait(figA);
+
+fprintf('\n=== Animación Método B (ctraj + IK) ===\n');
+figB = figure('Name','Animación Método B (ctraj + IK)');
+try
+    R.plot(qB, 'delay', dt, 'trail', '-');
+catch
+    R.plot(qB);
+end
+title('Animación Método B (ctraj + IK)');
+maximize_and_wait(figB);
+
 %% Gráficos y guardado
 outDir = fullfile(thisDir,'figs');
 if ~exist(outDir,'dir'); mkdir(outDir); end
@@ -122,55 +144,171 @@ if ~exist(outDir,'dir'); mkdir(outDir); end
 cols = lines(R.n);
 legq = arrayfun(@(k) sprintf('q%d',k), 1:R.n, 'UniformOutput', false);
 
+% Figura combinada con subplots 3x2: A a la izquierda, B a la derecha %{
+%{
+f0 = figure('Name','Articular: A vs B (subplots)');
+
+% Fila 1: posición
+subplot(3,2,1); hold on; grid on;
+for k=1:R.n, plot(tA, rad2deg(qA(:,k)), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Ángulo [deg]'); title('Posición articular (A)'); legend('Location','bestoutside');
+
+subplot(3,2,2); hold on; grid on;
+for k=1:R.n, plot(tB, rad2deg(qB(:,k)), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Ángulo [deg]'); title('Posición articular (B)'); legend('Location','bestoutside');
+
+% Fila 2: velocidad
+subplot(3,2,3); hold on; grid on;
+for k=1:R.n, plot(tA, rad2deg(qdA(:,k)), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Velocidad [deg/s]'); title('Velocidad articular (A)'); legend('Location','bestoutside');
+
+subplot(3,2,4); hold on; grid on;
+for k=1:R.n, plot(tB, rad2deg(qdB(:,k)), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Velocidad [deg/s]'); title('Velocidad articular (B)'); legend('Location','bestoutside');
+
+% Fila 3: aceleración
+subplot(3,2,5); hold on; grid on;
+for k=1:R.n, plot(tA, rad2deg(qddA(:,k)), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Aceleración [deg/s^2]'); title('Aceleración articular (A)'); legend('Location','bestoutside');
+
+subplot(3,2,6); hold on; grid on;
+for k=1:R.n, plot(tB, rad2deg(qddB(:,k)), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Aceleración [deg/s^2]'); title('Aceleración articular (B)'); legend('Location','bestoutside');
+
+saveas(f0, fullfile(outDir,'articular_grid_A_B.png'));
+maximize_and_wait(f0);
+%}
+%}
+
+% Figuras individuales como antes: A y B superpuestos por magnitud
 % Posición articular
-f1 = figure('Name','Comparación q(t)'); hold on; grid on;
+f1 = figure('Name','Evolución articular (grados)'); hold on; grid on;
 for k=1:R.n
-    plot(tA, qA(:,k), '--', 'Color', cols(k,:), 'DisplayName',[legq{k} ' A']);
-    plot(tB, qB(:,k), '-',  'Color', cols(k,:), 'DisplayName',[legq{k} ' B']);
+    plot(tA, rad2deg(qA(:,k)), '--', 'Color', cols(k,:), 'DisplayName',[legq{k} ' A']);
+    plot(tB, rad2deg(qB(:,k)), '-',  'Color', cols(k,:), 'DisplayName',[legq{k} ' B']);
 end
-xlabel('Tiempo [s]'); ylabel('Ángulo [rad]'); title('Evolución Articular'); legend('Location','bestoutside');
+xlabel('Tiempo [s]'); ylabel('Ángulo [deg]'); title('Evolución Articular'); legend('Location','bestoutside');
 saveas(f1, fullfile(outDir,'q_compare.png'));
+maximize_and_wait(f1);
 
 % Velocidad articular
-f2 = figure('Name','Comparación qd(t)'); hold on; grid on;
+f2 = figure('Name','Velocidad articular (deg/s)'); hold on; grid on;
 for k=1:R.n
-    plot(tA, qdA(:,k), '--', 'Color', cols(k,:), 'DisplayName',[legq{k} 'd A']);
-    plot(tB, qdB(:,k), '-',  'Color', cols(k,:), 'DisplayName',[legq{k} 'd B']);
+    plot(tA, rad2deg(qdA(:,k)), '--', 'Color', cols(k,:), 'DisplayName',[legq{k} 'd A']);
+    plot(tB, rad2deg(qdB(:,k)), '-',  'Color', cols(k,:), 'DisplayName',[legq{k} 'd B']);
 end
-xlabel('Tiempo [s]'); ylabel('Velocidad [rad/s]'); title('Velocidad Articular'); legend('Location','bestoutside');
+xlabel('Tiempo [s]'); ylabel('Velocidad [deg/s]'); title('Velocidad Articular'); legend('Location','bestoutside');
 saveas(f2, fullfile(outDir,'qd_compare.png'));
+maximize_and_wait(f2);
 
 % Aceleración articular
-f3 = figure('Name','Comparación qdd(t)'); hold on; grid on;
+f3 = figure('Name','Aceleración articular (deg/s^2)'); hold on; grid on;
 for k=1:R.n
-    plot(tA, qddA(:,k), '--', 'Color', cols(k,:), 'DisplayName',[legq{k} 'dd A']);
-    plot(tB, qddB(:,k), '-',  'Color', cols(k,:), 'DisplayName',[legq{k} 'dd B']);
+    plot(tA, rad2deg(qddA(:,k)), '--', 'Color', cols(k,:), 'DisplayName',[legq{k} 'dd A']);
+    plot(tB, rad2deg(qddB(:,k)), '-',  'Color', cols(k,:), 'DisplayName',[legq{k} 'dd B']);
 end
-xlabel('Tiempo [s]'); ylabel('Aceleración [rad/s^2]'); title('Aceleración Articular'); legend('Location','bestoutside');
+xlabel('Tiempo [s]'); ylabel('Aceleración [deg/s^2]'); title('Aceleración Articular'); legend('Location','bestoutside');
 saveas(f3, fullfile(outDir,'qdd_compare.png'));
+maximize_and_wait(f3);
 
-% Posición cartesiana
-f4 = figure('Name','Posición cartesiana'); hold on; grid on;
+% Figura combinada con subplots 3x2: A a la izquierda, B a la derecha
+f0 = figure('Name','Articular: A vs B (subplots)');
+
+% Fila 1: posición
+subplot(3,2,1); hold on; grid on;
+for k=1:R.n, plot(tA, qA(:,k), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Ángulo [rad]'); title('Posición articular (A)'); legend('Location','bestoutside');
+
+subplot(3,2,2); hold on; grid on;
+for k=1:R.n, plot(tB, qB(:,k), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Ángulo [rad]'); title('Posición articular (B)'); legend('Location','bestoutside');
+
+% Fila 2: velocidad
+subplot(3,2,3); hold on; grid on;
+for k=1:R.n, plot(tA, qdA(:,k), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Velocidad [rad/s]'); title('Velocidad articular (A)'); legend('Location','bestoutside');
+
+subplot(3,2,4); hold on; grid on;
+for k=1:R.n, plot(tB, qdB(:,k), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Velocidad [rad/s]'); title('Velocidad articular (B)'); legend('Location','bestoutside');
+
+% Fila 3: aceleración
+subplot(3,2,5); hold on; grid on;
+for k=1:R.n, plot(tA, qddA(:,k), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Aceleración [rad/s^2]'); title('Aceleración articular (A)'); legend('Location','bestoutside');
+
+subplot(3,2,6); hold on; grid on;
+for k=1:R.n, plot(tB, qddB(:,k), '-', 'Color', cols(k,:), 'DisplayName',legq{k}); end
+xlabel('Tiempo [s]'); ylabel('Aceleración [rad/s^2]'); title('Aceleración articular (B)'); legend('Location','bestoutside');
+
+saveas(f0, fullfile(outDir,'articular_grid_A_B.png'));
+maximize_and_wait(f0);
+
+% Posición cartesiana: 3 plots (fila superior combinada, abajo A y B)
+fP = figure('Name','Posición cartesiana (grid)');
+subplot(2,2,[1 2]); hold on; grid on;
 plot(tA, posA(:,1), '--', 'Color', [0.85 0.33 0.10], 'DisplayName','X A');
 plot(tA, posA(:,2), '--', 'Color', [0.47 0.67 0.19], 'DisplayName','Y A');
 plot(tA, posA(:,3), '--', 'Color', [0.00 0.45 0.74], 'DisplayName','Z A');
 plot(tB, posB(:,1), '-',  'Color', [0.85 0.33 0.10], 'DisplayName','X B');
 plot(tB, posB(:,2), '-',  'Color', [0.47 0.67 0.19], 'DisplayName','Y B');
 plot(tB, posB(:,3), '-',  'Color', [0.00 0.45 0.74], 'DisplayName','Z B');
-xlabel('Tiempo [s]'); ylabel('Posición [m]'); title('Posición del TCP'); legend('Location','bestoutside');
-saveas(f4, fullfile(outDir,'xyz_compare.png'));
+title('A vs B (X,Y,Z)'); ylabel('Posición [m]'); legend('Location','bestoutside');
+subplot(2,2,3); hold on; grid on;
+plot(tA, posA(:,1), '-', 'Color', [0.85 0.33 0.10], 'DisplayName','X');
+plot(tA, posA(:,2), '-', 'Color', [0.47 0.67 0.19], 'DisplayName','Y');
+plot(tA, posA(:,3), '-', 'Color', [0.00 0.45 0.74], 'DisplayName','Z');
+title('A (X,Y,Z)'); xlabel('Tiempo [s]'); ylabel('Posición [m]'); legend('Location','best');
+subplot(2,2,4); hold on; grid on;
+plot(tB, posB(:,1), '-', 'Color', [0.85 0.33 0.10], 'DisplayName','X');
+plot(tB, posB(:,2), '-', 'Color', [0.47 0.67 0.19], 'DisplayName','Y');
+plot(tB, posB(:,3), '-', 'Color', [0.00 0.45 0.74], 'DisplayName','Z');
+title('B (X,Y,Z)'); xlabel('Tiempo [s]'); ylabel('Posición [m]'); legend('Location','best');
+saveas(fP, fullfile(outDir,'pos_cart_grid.png')); maximize_and_wait(fP);
 
-% Velocidad cartesiana
-f5 = figure('Name','Velocidad cartesiana'); hold on; grid on;
-plot(tA, velA, '--'); plot(tB, velB, '-');
-xlabel('Tiempo [s]'); ylabel('Velocidad [m/s]'); title('Velocidad del TCP (X,Y,Z)'); legend({'X A','Y A','Z A','X B','Y B','Z B'},'Location','bestoutside');
-saveas(f5, fullfile(outDir,'vxyz_compare.png'));
+% Velocidad cartesiana: 3 plots (fila superior combinada, abajo A y B)
+fV = figure('Name','Velocidad cartesiana (grid)');
+subplot(2,2,[1 2]); hold on; grid on;
+plot(tA, velA(:,1), '--', 'DisplayName','X A');
+plot(tA, velA(:,2), '--', 'DisplayName','Y A');
+plot(tA, velA(:,3), '--', 'DisplayName','Z A');
+plot(tB, velB(:,1), '-',  'DisplayName','X B');
+plot(tB, velB(:,2), '-',  'DisplayName','Y B');
+plot(tB, velB(:,3), '-',  'DisplayName','Z B');
+title('A vs B (X,Y,Z)'); ylabel('Velocidad [m/s]'); legend('Location','bestoutside');
+subplot(2,2,3); hold on; grid on;
+plot(tA, velA(:,1), '-', 'DisplayName','X');
+plot(tA, velA(:,2), '-', 'DisplayName','Y');
+plot(tA, velA(:,3), '-', 'DisplayName','Z');
+title('A (X,Y,Z)'); xlabel('Tiempo [s]'); ylabel('Velocidad [m/s]'); legend('Location','best');
+subplot(2,2,4); hold on; grid on;
+plot(tB, velB(:,1), '-', 'DisplayName','X');
+plot(tB, velB(:,2), '-', 'DisplayName','Y');
+plot(tB, velB(:,3), '-', 'DisplayName','Z');
+title('B (X,Y,Z)'); xlabel('Tiempo [s]'); ylabel('Velocidad [m/s]'); legend('Location','best');
+saveas(fV, fullfile(outDir,'vel_cart_grid.png')); maximize_and_wait(fV);
 
-% Aceleración cartesiana
-f6 = figure('Name','Aceleración cartesiana'); hold on; grid on;
-plot(tA, accA, '--'); plot(tB, accB, '-');
-xlabel('Tiempo [s]'); ylabel('Aceleración [m/s^2]'); title('Aceleración del TCP (X,Y,Z)'); legend({'X A','Y A','Z A','X B','Y B','Z B'},'Location','bestoutside');
-saveas(f6, fullfile(outDir,'axyz_compare.png'));
+% Aceleración cartesiana: 3 plots (fila superior combinada, abajo A y B)
+fAcc = figure('Name','Aceleración cartesiana (grid)');
+subplot(2,2,[1 2]); hold on; grid on;
+plot(tA, accA(:,1), '--', 'DisplayName','X A');
+plot(tA, accA(:,2), '--', 'DisplayName','Y A');
+plot(tA, accA(:,3), '--', 'DisplayName','Z A');
+plot(tB, accB(:,1), '-',  'DisplayName','X B');
+plot(tB, accB(:,2), '-',  'DisplayName','Y B');
+plot(tB, accB(:,3), '-',  'DisplayName','Z B');
+title('A vs B (X,Y,Z)'); ylabel('Aceleración [m/s^2]'); legend('Location','bestoutside');
+subplot(2,2,3); hold on; grid on;
+plot(tA, accA(:,1), '-', 'DisplayName','X');
+plot(tA, accA(:,2), '-', 'DisplayName','Y');
+plot(tA, accA(:,3), '-', 'DisplayName','Z');
+title('A (X,Y,Z)'); xlabel('Tiempo [s]'); ylabel('Aceleración [m/s^2]'); legend('Location','best');
+subplot(2,2,4); hold on; grid on;
+plot(tB, accB(:,1), '-', 'DisplayName','X');
+plot(tB, accB(:,2), '-', 'DisplayName','Y');
+plot(tB, accB(:,3), '-', 'DisplayName','Z');
+title('B (X,Y,Z)'); xlabel('Tiempo [s]'); ylabel('Aceleración [m/s^2]'); legend('Location','best');
+saveas(fAcc, fullfile(outDir,'acc_cart_grid.png')); maximize_and_wait(fAcc);
 
 % Trayectoria geométrica en plano XZ
 f7 = figure('Name','Trayectoria XZ'); hold on; grid on; axis equal
@@ -178,5 +316,35 @@ plot(posA(:,1), posA(:,3), '--', 'LineWidth',1.2, 'DisplayName','A (jtraj)');
 plot(posB(:,1), posB(:,3), '-',  'LineWidth',1.2, 'DisplayName','B (ctraj+IK)');
 xlabel('X [m]'); ylabel('Z [m]'); title('Trayectoria del TCP en plano XZ'); legend('Location','best');
 saveas(f7, fullfile(outDir,'xz_trayectoria.png'));
+maximize_and_wait(f7);
 
 fprintf('Figuras guardadas en: %s\n', outDir);
+
+%% Utilidad de presentación: maximizar y esperar botón
+function maximize_and_wait(fig)
+    % Maximiza la ventana y muestra un botón "Continuar" que desbloquea la ejecución
+    try
+        set(fig, 'WindowState','maximized');
+    catch
+        try
+            set(fig, 'Units','normalized', 'OuterPosition',[0 0 1 1]);
+        catch
+        end
+    end
+    % Botón para continuar
+    btn = uicontrol('Parent',fig, 'Style','pushbutton', 'String','Continuar', ...
+                    'Units','normalized', 'Position',[0.86 0.02 0.12 0.06], ...
+                    'FontSize',12, 'Callback',@(src,evt) uiresume(fig));
+    try
+        uiwait(fig);
+    catch
+        % si la figura se cerró a mano, continuar
+    end
+    if isvalid(btn)
+        try, delete(btn); end
+    end
+    % Cerrar automáticamente la figura para mantener la pantalla limpia
+    if ishghandle(fig)
+        try, close(fig); end
+    end
+end
