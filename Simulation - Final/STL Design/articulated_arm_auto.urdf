@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<robot name="articulated_arm_auto">
+  <link name="base_link">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_00.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_00.stl"/></geometry></collision>
+  </link>
+  <link name="link1">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_01.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_01.stl"/></geometry></collision>
+  </link>
+  <link name="link2">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_02.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_02.stl"/></geometry></collision>
+  </link>
+  <link name="link3">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_03.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_03.stl"/></geometry></collision>
+  </link>
+  <link name="link4">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_04.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_04.stl"/></geometry></collision>
+  </link>
+  <link name="link5">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_05.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_05.stl"/></geometry></collision>
+  </link>
+  <link name="link6">
+    <visual><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_06.stl"/></geometry></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><mesh filename="link_part_06.stl"/></geometry></collision>
+  </link>
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/><child link="link1"/>
+    <origin xyz="-0.000409 0.104025 0.072009" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="2.0"/>
+  </joint>
+  <joint name="joint2" type="revolute">
+    <parent link="link1"/><child link="link2"/>
+    <origin xyz="-0.000308 0.108017 0.198661" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="2.0"/>
+  </joint>
+  <joint name="joint3" type="revolute">
+    <parent link="link2"/><child link="link3"/>
+    <origin xyz="-0.000210 0.022456 0.338382" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="2.0"/>
+  </joint>
+  <joint name="joint4" type="revolute">
+    <parent link="link3"/><child link="link4"/>
+    <origin xyz="-0.000363 0.019586 0.411847" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="2.0"/>
+  </joint>
+  <joint name="joint5" type="revolute">
+    <parent link="link4"/><child link="link5"/>
+    <origin xyz="-0.000737 0.069036 0.560128" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="2.0"/>
+  </joint>
+  <joint name="joint6" type="revolute">
+    <parent link="link5"/><child link="link6"/>
+    <origin xyz="-0.001537 0.069226 0.720225" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.1416" upper="3.1416" effort="10" velocity="2.0"/>
+  </joint>
+</robot>
