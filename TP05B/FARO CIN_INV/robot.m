@@ -27,3 +27,17 @@ R.offset = offset;
 R.base = base;
 R.tool = tool;
 q = zeros(1, R.n);
+q = [0 90 170 90 30 70 ]
+%% Ploteo Estético (Opción 1: plot)
+figure(1);
+R.plot(q, ...
+    'workspace', [-1.5 1.5 -1.5 1.5 -0.5 2], ... % Define el tamaño de la caja
+    'scale', 0.8, ...                  % Escala del gráfico
+    'linkcolor', [0.4 0.4 0.4], ...   % Eslabones grises
+    'jointcolor', [0.90 0.35 0.10], ... % Juntas naranjas
+    'notiles', ...                     % Sin piso
+    'nowrist', ...                     % No dibujar la muñeca genérica
+    'jointlen', 0.05, ...                % Largo cosmético del eje (0.05m)
+    'jointdiam', 0.05);                % Diámetro cosmético del eje (0.05m)
+
+title('Robot Scan Arm');
