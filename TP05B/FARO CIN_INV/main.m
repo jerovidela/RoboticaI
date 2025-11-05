@@ -1,5 +1,5 @@
 clear; clc; close all;
-robot      
+robot     
 
 
 q=rand(1,6);
