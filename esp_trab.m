@@ -26,12 +26,13 @@ robot; % crea el objeto R
 
 %% Factor de seguridad para limites articulares
 f_seg=1;
-qlim = f_seg * qlim;
 
 %% Trigger de salto
 trigger=1;
 
 %% --- Workspace XZ (tramos separados)
+qlim = f_seg * qlim;
+
 q6 = 0;
 q5 = 0;
 q1 = 0;
