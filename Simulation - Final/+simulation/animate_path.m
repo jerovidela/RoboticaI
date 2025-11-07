@@ -1,4 +1,17 @@
 function fig = animate_path(R, q_total, t_total, cfg, scan_log)
+% animate_path  Animacion 3D de la trayectoria con placa y medidores
+%
+% Resumen:
+% - Anima el robot siguiendo q_total vs t_total y traza del TCP.
+% - Dibuja placa, colorea pasadas (scan_log) y muestra barras de |v_tip| y metrica jacobiana.
+% - Puede grabar video si cfg.save_video=true.
+%
+% Entradas:
+%   R: SerialLink; q_total [K x dof]; t_total [K x 1]
+%   cfg: struct con campos de visual (ws,fps,trail,plate,video,...)
+%   scan_log: struct de segmentos de escaneo (opcional)
+% Salidas:
+%   fig: handle de la figura creada
 % Animación con traza del TCP y placa dibujada.
 % cfg:
 %   .ws           = [-1.5 1 -1.5 1 0 1]   % workspace

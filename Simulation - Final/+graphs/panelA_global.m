@@ -1,4 +1,18 @@
 function stats = panelA_global(R, Q, t, scan_log, vref, opts)
+% panelA_global  Panel de chequeo global de velocidad y error lateral
+%
+% Resumen:
+% - Calcula |v_tip|(t) en toda la simulacion.
+% - Sobre segmentos de scan: proyecta velocidad y mide desviacion lateral.
+% - Dibuja tres subplots y sombrea periodos de escaneo.
+%
+% Entradas:
+%   R: SerialLink, Q: [K x dof], t: [K x 1]
+%   scan_log: struct con campos por pasada (k0,k1,T0,T1,...)
+%   vref: velocidad de referencia (opcional)
+%   opts: struct de guardado/formatos/directorio (opcional)
+% Salidas:
+%   stats: struct con estadisticas por pasada (cv, mean, std)
 % Gráfico global: |v_tip|(t) (todo), v_proj(t) y desviación lateral (solo scans)
 % stats: CV de v_proj por fila
 

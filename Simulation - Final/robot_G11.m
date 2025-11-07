@@ -1,4 +1,9 @@
 function R = robot_G11(vis)
+% robot_G11  Crea y visualiza el manipulador del grupo G11 (SerialLink)
+% - Define parametros DH, limites, base y herramienta; devuelve SerialLink.
+% - Si se pasa 'vis', ajusta opciones de visualizacion y realiza un plot inicial.
+% Entradas: vis (struct opcional: ws, linkcolor, jointcolor, jointlen, jointdiam)
+% Salidas:  R (SerialLink)
 %% Definicion de los parametros del robot
     d_tool = 0.0; % Definición explícita del desplazamiento de la herramienta puede cambiar segun la herramienta
     dh = [ ...
@@ -59,6 +64,9 @@ function R = robot_G11(vis)
 end
 
 function h = plot_pretty_G11(R, Q, diam, workspace, opts)
+% plot_pretty_G11  Dibuja el robot con cilindros en cada junta y workspace.
+% Entradas: R (SerialLink), Q [N x n], diam (m, opcional), workspace, opts
+% Salidas:  h (struct con handles de figura/objetos)
 % plot_pretty_G11  Dibuja el SerialLink con “tambores” cilíndricos por junta
 % y un workspace visible. Si Q es Nx6, anima el movimiento.
 %
@@ -151,6 +159,9 @@ function h = plot_pretty_G11(R, Q, diam, workspace, opts)
 end
 
 function Ti = link_transforms(R, q)
+% link_transforms  Devuelve Ti{1..n} con transformadas 4x4 base->frame i
+% Entradas: R (SerialLink), q (1xn, rad)
+% Salidas:  Ti (cell 1..n de matrices 4x4)
 % Devuelve cell Ti{1..n} con transformadas 4x4 de base a cada frame i
     Ti = cell(R.n,1);
     T  = eye(4);
@@ -162,6 +173,8 @@ function Ti = link_transforms(R, q)
 end
 
 function draw_workspace_wireframe(w, a)
+% draw_workspace_wireframe  Dibuja el wireframe de la caja del workspace
+% Entradas: w [xmin xmax ymin ymax zmin zmax], a (opcional)
 % Dibuja un wireframe de la caja del workspace
     if nargin<2, a = 0.3; end
     [x0,x1,y0,y1,z0,z1] = deal(w(1),w(2),w(3),w(4),w(5),w(6));
@@ -175,6 +188,8 @@ function draw_workspace_wireframe(w, a)
 end
 
 function draw_octant_box(w, alphaFace)
+% draw_octant_box  Dibuja caja translucida del primer octante
+% Entradas: w [xmin xmax ymin ymax zmin zmax], alphaFace (0..1)
 % Caja translúcida del primer octante delimitada por w
     [x0,x1,y0,y1,z0,z1] = deal(w(1),w(2),w(3),w(4),w(5),w(6));
     if x1<=x0 || y1<=y0 || z1<=z0, return; end
@@ -186,6 +201,8 @@ function draw_octant_box(w, alphaFace)
 end
 
 function draw_plate(p)
+% draw_plate  Dibuja una placa rectangular a z fija
+% Entradas: p = [x0 x1 y0 y1 z]
 % Dibuja una placa rectangular en z fija: p = [x0 x1 y0 y1 z]
     x0=p(1); x1=p(2); y0=p(3); y1=p(4); z=p(5);
     verts = [x0 y0 z; x1 y0 z; x1 y1 z; x0 y1 z];

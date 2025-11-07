@@ -1,3 +1,15 @@
+% main.m - Script principal de simulacion del escaneo
+%
+% Resumen:
+% - Configura el robot (robot_G11) y parametros del escaneo.
+% - Agrega un movimiento de posicionamiento desde una pose "home"
+%   hasta el inicio del escaneo para suavizar aceleraciones iniciales.
+% - Corrige la cinematica elevando la placa a z_scan = 0.35 m.
+% - Genera la trayectoria completa (posicionamiento + escaneo).
+% - Renderiza graficos de verificacion y produce una animacion opcional.
+%
+% Entradas: (ninguna; parametrizacion definida en este script)
+% Salidas:  (ninguna; genera figuras/archivos en la carpeta Pic)
 
 clear functions; rehash; clc;
 
@@ -10,7 +22,7 @@ rehash;
 % VERSIÓN 5
 %
 % Esta función soluciona DOS problemas:
-% 1. AÑADE UN MOVIMIENTO DE POSICIONAMIENTO: (Tu intuición)
+% 1. AÑADE UN MOVIMIENTO DE POSICIONAMIENTO:
 %    Genera un 'mstraj' desde una pose 'home' hasta el inicio
 %    del escaneo ('q_init') para eliminar el pico de aceleración inicial.
 % 2. CORRIGE LA CINEMÁTICA: Sube la placa a z_scan = 0.35 m.
@@ -51,7 +63,7 @@ xs_0 = cfg.m; y_0  = cfg.m;
 T_start = cfg.T_plate * transl(xs_0, y_0, cfg.z_scan) * cfg.R_orient;
 q_init = R.ikcon(T_start, q_home); % Usamos q_home como semilla
 
-% --- 1) GENERAR MOVIMIENTO DE POSICIONAMIENTO (Tu idea)
+% --- 1) GENERAR MOVIMIENTO DE POSICIONAMIENTO
 fprintf('Generando movimiento de posicionamiento (Home -> q_init)...\n');
 t_position = 2.0; % s (tiempo para el movimiento inicial)
 tacc_pos = 0.5;   % s (aceleración suave)

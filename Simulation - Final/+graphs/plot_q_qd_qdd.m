@@ -1,4 +1,12 @@
 function plot_q_qd_qdd(t, q, suptitleText)
+% plot_q_qd_qdd  Grafica perfiles q, qd, qdd (en grados)
+%
+% Entradas:
+%   t: [N x 1] tiempo (s)
+%   q: [N x dof] posiciones articulares (rad)
+%   suptitleText: texto de titulo superior (opcional)
+% Salidas:
+%   (ninguna) crea una figura con 3 subplots
 if nargin < 3, suptitleText = 'Perfiles articulares'; end
 qd  = graphs.compute_derivatives(t, q);
 qdd = graphs.compute_derivatives(t, qd);

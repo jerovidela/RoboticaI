@@ -1,4 +1,12 @@
 function plot_xyz_profiles(t, pos, vel, acc, titlePrefix)
+% plot_xyz_profiles  Grafica perfiles cartesianos X,Y,Z de pos/vel/acc
+%
+% Entradas:
+%   t: [N x 1] tiempo (s)
+%   pos, vel, acc: [N x 3]
+%   titlePrefix: prefijo para titulos (opcional)
+% Salidas:
+%   (ninguna) crea 3 figuras (pos, vel, acc)
 if nargin < 5, titlePrefix = 'Cartesiano'; end
 
 % Posición

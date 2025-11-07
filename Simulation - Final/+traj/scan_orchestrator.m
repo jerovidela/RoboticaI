@@ -1,4 +1,11 @@
 function [q_total, t_total, scan_log] = scan_orchestrator(R, cfg, q_init)
+% scan_orchestrator  Orquesta escaneo en pasadas rectas con U-turns
+%
+% Resumen:
+% - Genera N pasadas rectas (LSPB+IK) sobre una placa con separacion delta.
+% - Entre pasadas, sube, cruza y baja (U-turn) con mstraj.
+% - Acepta q_init para arrancar desde pose inicial ya posicionada.
+%
 % Genera N pasadas rectas (LSPB+IK) con U-turns (mstraj) y log por pasada.
 % R  : SerialLink
 % cfg: struct con campos:

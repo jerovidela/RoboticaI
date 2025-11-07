@@ -1,4 +1,8 @@
 function outfiles = render_profiles(R, q_total, t_total, titlePrefix, opts)
+% render_profiles  Renderiza y opcionalmente guarda perfiles cartesianosy articulares
+% - Calcula pos/vel/acc cartesianos y grafica; ademas q/qd/qdd.
+% - Guarda figuras segun opciones indicadas.
+%
 %RENDER_PROFILES  Render cartesiano (3 figs) y articular (3 subplots) y guarda en Sim/Pic.
 % Uso (compatible con el original):
 %   graphs.render_profiles(R, q_total, t_total)                    % sin guardar explícito (usa defaults)

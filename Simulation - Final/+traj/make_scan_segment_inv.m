@@ -1,4 +1,18 @@
 function [Q, t, S, Sdot] = make_scan_segment_inv(R, T0, T1, vmax, amax, dt, q0)
+% make_scan_segment_inv  Segmento recto de escaneo via IK por puntos
+%
+% Resumen:
+% - Genera perfil LSPB cartesiano entre T0 y T1 (s, s_dot).
+% - Para cada punto, resuelve IK (ikcon) y construye Q.
+%
+% Entradas:
+%   R: SerialLink; T0,T1: SE3 (4x4); vmax (m/s); amax (m/s^2); dt (s)
+%   q0: semilla de IK (1 x dof, opcional)
+% Salidas:
+%   Q: [N x dof] trayectoria articular
+%   t: [N x 1] tiempos
+%   S: [N x 1] avance acumulado (m)
+%   Sdot: [N x 1] velocidad a lo largo del segmento (m/s)
 % Genera una trayectoria articular para un segmento de escaneo recto.
 % Este método calcula la trayectoria Cartesiana (LSPB) primero y luego
 % resuelve la cinemática inversa (IK) para cada punto.

@@ -1,4 +1,12 @@
 function h = draw_plate(center, sizeWH, faceColor)
+% draw_plate  Dibuja una placa rectangular horizontal en z fija
+%
+% Entradas:
+%   center: [cx cy cz]
+%   sizeWH: [W H]
+%   faceColor: RGB (opcional)
+% Salidas:
+%   h: handle del patch creado
 % Dibuja una placa horizontal en z = center(3), centrada en (x,y) = center(1:2)
     cx=center(1); cy=center(2); cz=center(3);
     W=sizeWH(1); H=sizeWH(2);

@@ -1,4 +1,18 @@
 function dy = compute_derivatives(t, y, order, win_sec, poly_order)
+% compute_derivatives  Derivada temporal robusta (y' o y'') con suavizado
+%
+% Resumen:
+% - Aplica, si disponible, filtro de Savitzky-Golay para suavizar.
+% - Usa diferencias centrales considerando t no uniforme.
+%
+% Entradas:
+%   t: [N x 1] tiempo (s)
+%   y: [N x D] señal
+%   order: 1 (primera derivada) o 2 (segunda)
+%   win_sec: ventana SG en segundos (opcional, default 0.35)
+%   poly_order: grado del SG (opcional, default 3)
+% Salidas:
+%   dy: [N x D] derivada temporal estimada
 % Derivada robusta: SG para suavizar -> diferencia central (t no uniforme).
 % y: [N x D], t: [N x 1]; order: 1 (vel) o 2 (acel)
 if nargin < 3 || isempty(order),      order = 1;      end

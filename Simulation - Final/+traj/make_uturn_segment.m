@@ -1,4 +1,18 @@
 function q_uturn = make_uturn_segment(R, Twaypoints, q0, V, dt, tacc)
+% make_uturn_segment  Genera maniobra de retorno (U-turn) fuera de la placa
+%
+% Resumen:
+% - Resuelve IK en pocos waypoints (levantar, cruzar, bajar).
+% - Usa mstraj para suavizar entre waypoints con velocidades articulares V.
+%
+% Entradas:
+%   R: SerialLink
+%   Twaypoints: 4x4xM poses clave para el giro
+%   q0: junta inicial (1 x dof)
+%   V: velocidades por junta [1 x dof] (rad/s)
+%   dt: paso temporal (s), tacc: tiempo de blending (s)
+% Salidas:
+%   q_uturn: [K x dof] trayectoria articular del U-turn
 % U-turn fuera de la placa: IK en pocos waypoints y mstraj para suavizar.
 % - Twaypoints: 4x4xM (levantar, cruzar, bajar...)
 % - q0: junta inicial (1x6) para continuidad
