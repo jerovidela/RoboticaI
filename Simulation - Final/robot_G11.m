@@ -1,9 +1,9 @@
-function R = robot_G11(vis)
+function [R, plotopt, q_home] = robot_G11(vis)
 % robot_G11  Crea y visualiza el manipulador del grupo G11 (SerialLink)
 % - Define parametros DH, limites, base y herramienta; devuelve SerialLink.
-% - Si se pasa 'vis', ajusta opciones de visualizacion y realiza un plot inicial.
-% Entradas: vis (struct opcional: ws, linkcolor, jointcolor, jointlen, jointdiam)
-% Salidas:  R (SerialLink)
+% - Si se pasa 'vis', ajusta opciones de visualizacion y puede plotear (vis.plot=true).
+% Entradas: vis (struct opcional: ws, linkcolor, jointcolor, jointlen, jointdiam, plot)
+% Salidas:  R (SerialLink), plotopt (cell de opciones para R.plot), q_home (1xN)
 %% Definicion de los parametros del robot
     d_tool = 0.0; % Definición explícita del desplazamiento de la herramienta puede cambiar segun la herramienta
     dh = [ ...
@@ -34,33 +34,45 @@ function R = robot_G11(vis)
     R.offset = offset;
     R.base = base;
     R.tool = tool;
-    q = zeros(1, R.n);
-    q = [0 90 170 90 30 70 ];
-    %% Opciones visuales (parametricas)
+
+    % Opciones de estilo por defecto para plot (no dibuja ahora)
     if nargin < 1 || isempty(vis), vis = struct(); end
     if ~isfield(vis,'ws'),         vis.ws         = [-0.5 0.8 -0.5 0.8 0 1]; end
-    if ~isfield(vis,'linkcolor'),  vis.linkcolor  = [0.58 0.60 0.63];        end
-    if ~isfield(vis,'jointcolor'), vis.jointcolor = [0.20 0.55 1.00];        end
-    if ~isfield(vis,'jointlen'),   vis.jointlen   = 0.08;                    end
-    if ~isfield(vis,'jointdiam'),  vis.jointdiam  = 0.06;                    end
-    %% Ploteo Estético (Opción 1: plot)
-    figure(1);
-    R.plot(q, ...
-        'workspace', [-1.5 1 -1.5 1 0 1], ... % Define el tamaño de la caja
-        'scale', 1, ...                  % Escala del gráfico
-        'linkcolor', [0.4 0.4 0.4], ...   % Eslabones grises
-        'jointcolor', [0.90 0.35 0.10], ... % Juntas naranjas
-        'notiles', ...                     % Sin piso
-        'jointlen', 0.05, ...                % Largo cosmético del eje (0.05m)
-        'jointdiam', 0.05);                % Diámetro cosmético del eje (0.05m)
-    
-    % Reconfigurar visual segun parametros 'vis'
-    R.plot(q, 'workspace', vis.ws, 'scale', 1, 'linkcolor', vis.linkcolor, ...
-        'jointcolor', vis.jointcolor, 'notiles', 'jointlen', vis.jointlen, 'jointdiam', vis.jointdiam);
-    axis(vis.ws); grid on; box on; axis vis3d; view(135,25);
-    camlight headlight; lighting gouraud;
+    if ~isfield(vis,'linkcolor'),  vis.linkcolor  = [0.35 0.36 0.38];      end
+    if ~isfield(vis,'jointcolor'), vis.jointcolor = [0.95 0.45 0.10];      end
+    % Escalas: links mas "finos" y juntas mas notorias
+    ws = vis.ws; dims = [ws(2)-ws(1), ws(4)-ws(3), ws(6)-ws(5)];
+    baseScale = max(1e-3, min(dims));
+    % Juntas mucho más grandes por defecto
+    if ~isfield(vis,'jointlen'),   vis.jointlen   = 0.95 * baseScale;      end
+    if ~isfield(vis,'jointdiam'),  vis.jointdiam  = 1.15 * baseScale;      end
+    if ~isfield(vis,'scale'),      vis.scale      = 0.55;                  end
 
-    title('Robot Scan Arm');
+    % Guardar estilo para aplicar en futuros R.plot(...)
+    plotopt = {
+        'workspace', vis.ws, ...
+        'scale', vis.scale, ...
+        'linkcolor', vis.linkcolor, ...
+        'jointcolor', vis.jointcolor, ...
+        'jointlen', vis.jointlen, ...
+        'jointdiam', vis.jointdiam};
+
+    % Pose "home" para ploteo por defecto (diferente a cero)
+    % Pose de home mas "estirada" (puede ajustarse con vis.home_deg)
+    if isfield(vis,'home_deg') && numel(vis.home_deg) == 6
+        q_home_deg = vis.home_deg(:).';
+    else
+        q_home_deg = [25 -165 45 -90 -90 0];
+    end
+    q_home = deg2rad(q_home_deg);
+
+    % Plot opcional si se solicita explicitamente
+    if isfield(vis,'plot') && vis.plot
+        R.plot(q_home, plotopt{:});
+        axis(vis.ws); grid on; box on; axis vis3d; view(135,25);
+        camlight headlight; lighting gouraud;
+        title('Robot Scan Arm');
+    end
 end
 
 function h = plot_pretty_G11(R, Q, diam, workspace, opts)
@@ -210,3 +222,4 @@ function draw_plate(p)
     patch('Vertices',verts,'Faces',faces,'FaceAlpha',0.15, ...
           'EdgeAlpha',0.25,'FaceColor',[0.3 0.5 0.9]);
 end
+
