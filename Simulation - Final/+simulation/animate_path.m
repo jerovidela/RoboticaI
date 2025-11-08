@@ -33,19 +33,19 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
     end
 
     % defaults
-    if ~checkfield(cfg,'ws'),          cfg.ws = [-0.5 0.8 -0.5 0.8 0 1]; end
-    if ~checkfield(cfg,'fps'),         cfg.fps = 30; end
-    if ~checkfield(cfg,'trail_color'), cfg.trail_color = [0 0 0]; end
-    if ~checkfield(cfg,'trail_width'), cfg.trail_width = 1.5; end
+    if ~isfield(cfg, 'ws'),          cfg.ws = [-0.5 0.8 -0.5 0.8 0 1]; end
+    if ~isfield(cfg, 'fps'),         cfg.fps = 30; end
+    if ~isfield(cfg, 'trail_color'), cfg.trail_color = [0 0 0]; end
+    if ~isfield(cfg, 'trail_width'), cfg.trail_width = 1.5; end
     % Asegurar que cfg.plate exista y sea struct antes de completar defaults
-    if ~checkfield(cfg,'plate') || ~isa(cfg.plate, 'struct')
+    if ~isfield(cfg, 'plate') || ~isstruct(cfg.plate)
         cfg.plate = struct();
     end
-    if ~checkfield(cfg.plate,'center'), cfg.plate.center = [0.45 0 0.20]; end  % tu opción B
-    if ~checkfield(cfg.plate,'size'),  cfg.plate.size = [0.40 0.30]; end
-    if ~checkfield(cfg.plate,'color'), cfg.plate.color = [0.72 0.75 0.78]; end  % metallic gray
-    if ~checkfield(cfg,'save_video'),  cfg.save_video = false; end
-    if ~checkfield(cfg,'video_file'),  cfg.video_file = 'scan.mp4'; end
+    if ~isfield(cfg.plate, 'center'), cfg.plate.center = [0.45 0 0.20]; end  % tu opción B
+    if ~isfield(cfg.plate, 'size'),  cfg.plate.size = [0.40 0.30]; end
+    if ~isfield(cfg.plate, 'color'), cfg.plate.color = [0.72 0.75 0.78]; end  % metallic gray
+    if ~isfield(cfg, 'save_video'),  cfg.save_video = false; end
+    if ~isfield(cfg, 'video_file'),  cfg.video_file = 'scan.mp4'; end
 
     dt = mean(diff(t_total));
     step = max(1, round(1/(cfg.fps*dt)));   % salto de muestras para animar
@@ -66,7 +66,7 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
         if size(V,1) < N, V(end+1:N,:) = 0; end
     end
     vmag = sqrt(sum(V.^2,2));
-    if ~checkfield(cfg,'speed_ref') || isempty(cfg.speed_ref)
+    if ~isfield(cfg, 'speed_ref') || isempty(cfg.speed_ref)
         cfg.speed_ref = max(1e-6, prctile(vmag, 99));
     end
 
@@ -133,8 +133,8 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
     rectangle(axJac,'Position',[0 0 1 1],'FaceColor',[0.92 0.92 0.92],'EdgeColor',[0.7 0.7 0.7]);
     hBarJac = patch(axJac,[0 0 0 0],[0 1 1 0],[0.25 0.45 0.85],'EdgeColor','none');
     hTxtJac = text(axJac,0.01,0.5,'J metric = n/a','HorizontalAlignment','left','VerticalAlignment','middle','FontSize',9);
-    if ~checkfield(cfg,'jac_metric') || isempty(cfg.jac_metric), cfg.jac_metric = 'cond'; end
-    if ~checkfield(cfg,'jac_cond_max') || isempty(cfg.jac_cond_max), cfg.jac_cond_max = 1000; end
+    if ~isfield(cfg, 'jac_metric') || isempty(cfg.jac_metric), cfg.jac_metric = 'cond'; end
+    if ~isfield(cfg, 'jac_cond_max') || isempty(cfg.jac_cond_max), cfg.jac_cond_max = 1000; end
     if strcmpi(cfg.jac_metric,'cond')
         jacLabel = sprintf('cond(J) max %.0f', cfg.jac_cond_max);
     else
