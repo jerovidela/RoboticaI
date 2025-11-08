@@ -14,14 +14,14 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
 %   fig: handle de la figura creada
 % Animación con traza del TCP y placa dibujada.
 % cfg:
-%   .ws           = [-1.5 1 -1.5 1 0 1]   % workspace
-%   .fps          = 30                    % frames por segundo destino
-%   .trail_color  = [0 0 0]               % color de la traza
+%   .ws           = [-0.5 0.8 -0.5 0.8 0 1]   % workspace
+%   .fps          = 30                        % frames por segundo destino
+%   .trail_color  = [0 0 0]                   % color de la traza
 %   .trail_width  = 1.5
-%   .plate.center = [0.45 0.00 0.20]      % opción B (centro de placa, TCP)
-%   .plate.size   = [W H]                 % dimensiones de la placa
+%   .plate.center = [0.45 0.00 0.20]          % opción B (centro de placa, TCP)
+%   .plate.size   = [W H]                     % dimensiones de la placa
 %   .plate.color  = [0.6 0.8 1.0]
-%   .save_video   = false                 % o true
+%   .save_video   = false                     % o true
 %   .video_file   = 'scan.mp4'
 
     arguments
@@ -33,17 +33,19 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
     end
 
     % defaults
-    if ~isfield(cfg,'ws'),          cfg.ws = [-0.5 0.8 -0.5 0.8 0 1]; end
-    if ~isfield(cfg,'fps'),         cfg.fps = 30; end
-    if ~isfield(cfg,'trail_color'), cfg.trail_color = [0 0 0]; end
-    if ~isfield(cfg,'trail_width'), cfg.trail_width = 1.5; end
-    if ~isfield(cfg,'plate') || ~isfield(cfg.plate,'center')
-        cfg.plate.center = [0.45 0 0.20];  % tu opción B
+    if ~isfield(cfg, 'ws'),          cfg.ws = [-0.5 0.8 -0.5 0.8 0 1]; end
+    if ~isfield(cfg, 'fps'),         cfg.fps = 30; end
+    if ~isfield(cfg, 'trail_color'), cfg.trail_color = [0 0 0]; end
+    if ~isfield(cfg, 'trail_width'), cfg.trail_width = 1.5; end
+    % Asegurar que cfg.plate exista y sea struct antes de completar defaults
+    if ~isfield(cfg, 'plate') || ~isstruct(cfg.plate)
+        cfg.plate = struct();
     end
-    if ~isfield(cfg.plate,'size'),  cfg.plate.size = [0.40 0.30]; end
-    if ~isfield(cfg.plate,'color'), cfg.plate.color = [0.72 0.75 0.78]; end  % metallic gray
-    if ~isfield(cfg,'save_video'),  cfg.save_video = false; end
-    if ~isfield(cfg,'video_file'),  cfg.video_file = 'scan.mp4'; end
+    if ~isfield(cfg.plate, 'center'), cfg.plate.center = [0.45 0 0.20]; end  % tu opción B
+    if ~isfield(cfg.plate, 'size'),  cfg.plate.size = [0.40 0.30]; end
+    if ~isfield(cfg.plate, 'color'), cfg.plate.color = [0.72 0.75 0.78]; end  % metallic gray
+    if ~isfield(cfg, 'save_video'),  cfg.save_video = false; end
+    if ~isfield(cfg, 'video_file'),  cfg.video_file = 'scan.mp4'; end
 
     dt = mean(diff(t_total));
     step = max(1, round(1/(cfg.fps*dt)));   % salto de muestras para animar
@@ -64,7 +66,7 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
         if size(V,1) < N, V(end+1:N,:) = 0; end
     end
     vmag = sqrt(sum(V.^2,2));
-    if ~isfield(cfg,'speed_ref') || isempty(cfg.speed_ref)
+    if ~isfield(cfg, 'speed_ref') || isempty(cfg.speed_ref)
         cfg.speed_ref = max(1e-6, prctile(vmag, 99));
     end
 
@@ -74,7 +76,7 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
     try
         set(fig,'Units','pixels');
         pos = get(fig,'Position');
-        if isfield(cfg,'video_size') && numel(cfg.video_size)==2
+        if checkfield(cfg,'video_size') && numel(cfg.video_size)==2
             sz = cfg.video_size; w = sz(1); h = sz(2);
         else
             w = 1280; h = 720;
@@ -83,7 +85,22 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
         set(fig,'Resize','off');
     catch
     end
-    R.plot(q_total(1,:), 'workspace', cfg.ws, 'nowrist', 'noshadow', 'noname', 'delay', 0);
+    % Aplicar estilo de plot del robot, si fue provisto
+    if checkfield(cfg,'plotopt') && ~isempty(cfg.plotopt)
+        po = cfg.plotopt;
+        % Si cfg.ws está definido, que overridee el workspace en plotopt
+        if checkfield(cfg,'ws') && ~isempty(cfg.ws)
+            idx = find(strcmp(po,'workspace'), 1, 'first');
+            if ~isempty(idx) && numel(po) >= idx+1
+                po{idx+1} = cfg.ws;
+            else
+                po = [po, {'workspace', cfg.ws}]; %#ok<AGROW>
+            end
+        end
+        R.plot(q_total(1,:), po{:}, 'nowrist', 'noshadow', 'noname', 'delay', 0);
+    else
+        R.plot(q_total(1,:), 'workspace', cfg.ws, 'nowrist', 'noshadow', 'noname', 'delay', 0);
+    end
     hold on; grid on; grid minor; box on; axis equal; axis vis3d; view(45,25);
     lighting gouraud; camlight headlight; material metal;
 
@@ -116,8 +133,8 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
     rectangle(axJac,'Position',[0 0 1 1],'FaceColor',[0.92 0.92 0.92],'EdgeColor',[0.7 0.7 0.7]);
     hBarJac = patch(axJac,[0 0 0 0],[0 1 1 0],[0.25 0.45 0.85],'EdgeColor','none');
     hTxtJac = text(axJac,0.01,0.5,'J metric = n/a','HorizontalAlignment','left','VerticalAlignment','middle','FontSize',9);
-    if ~isfield(cfg,'jac_metric') || isempty(cfg.jac_metric), cfg.jac_metric = 'cond'; end
-    if ~isfield(cfg,'jac_cond_max') || isempty(cfg.jac_cond_max), cfg.jac_cond_max = 1000; end
+    if ~isfield(cfg, 'jac_metric') || isempty(cfg.jac_metric), cfg.jac_metric = 'cond'; end
+    if ~isfield(cfg, 'jac_cond_max') || isempty(cfg.jac_cond_max), cfg.jac_cond_max = 1000; end
     if strcmpi(cfg.jac_metric,'cond')
         jacLabel = sprintf('cond(J) max %.0f', cfg.jac_cond_max);
     else
@@ -181,4 +198,15 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
     end
 
     if ~isempty(vw), close(vw); end
+end
+
+function tf = checkfield(s, name)
+    % Chequeo robusto de existencia de campo evitando cualquier sombra de isfield
+    tf = false;
+    try
+        s.(name); %#ok<VUNUS>
+        tf = true;
+    catch
+        tf = false;
+    end
 end

@@ -32,7 +32,7 @@ rehash;
 
 % --- Setup mínimo
 proj = fileparts(mfilename('fullpath')); addpath(proj); rehash;
-R = robot_G11();
+[R, plotopt] = robot_G11();
 R.base = eye(4);
 
 % --- Pose "Home" (usaremos la de la demo de robot_G11.m)
@@ -111,7 +111,9 @@ cfgsim = struct( ...
     'jac_metric', 'cond', ...
     'jac_cond_max', 1000, ...
     'save_video', true, ...
-    'video_file', fullfile(outdir,'scan_fifth_try.mp4'));
+    'video_file', fullfile(outdir,'scan_fifth_try.mp4'), ...
+    'plotopt', [plotopt, {'nowrist','noshadow'}] ... % aplica estilo del robot al plot de la animación
+);
 
 fprintf('Iniciando animación...\n');
 simulation.animate_path(R, q_total, t_total, cfgsim, scan_log);
