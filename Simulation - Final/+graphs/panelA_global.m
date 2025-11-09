@@ -91,11 +91,11 @@ function stats = panelA_global(R, Q, t, scan_log, vref, opts)
         uistack(findobj(a,'Type','line'), 'top');
     end
 
-    % Resumen rápido en consola
-    if ~isempty(stats)
-        cv_all = [stats.cv];
-        fprintf('CV v_proj por fila (%%): '); fprintf('%.2f ', 100*cv_all); fprintf('\n');
-    end
+    % % Resumen rápido en consola
+    % if ~isempty(stats)
+    %     cv_all = [stats.cv];
+    %     fprintf('CV v_proj por fila (%%): '); fprintf('%.2f ', 100*cv_all); fprintf('\n');
+    % end
 
     % Guardado opcional
     if exist('opts','var') && isstruct(opts) && isfield(opts,'save') && opts.save

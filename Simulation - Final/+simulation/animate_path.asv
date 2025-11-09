@@ -24,40 +24,39 @@ function fig = animate_path(R, q_total, t_total, cfg, scan_log)
 %   .save_video   = false                     % o true
 %   .video_file   = 'scan.mp4'
 
-arguments
-    R
-    q_total double
-    t_total double
-    cfg struct = struct()
-    scan_log struct = struct('k0',{},'k1',{})
-end
-
-% --- 0) Inicialización robusta ---
-vw = [];  % evita 'Unrecognized function or variable vw'
-
-% ---------- defaults seguros, sin isstruct ----------
-if ~builtin('isfield', cfg, 'fps'),         cfg.fps = 30;              end
-if ~builtin('isfield', cfg, 'trail_color'), cfg.trail_color = [0 0 0]; end
-if ~builtin('isfield', cfg, 'trail_width'), cfg.trail_width = 1.5;     end
-if ~builtin('isfield', cfg, 'ws'),          cfg.ws = [-0.5 0.8 -0.5 0.8 0 1]; end
-
-% Asegurar cfg.plate
-if ~builtin('isfield', cfg, 'plate')
-    cfg.plate = struct();
-else
-    try
-        builtin('isfield', cfg.plate, 'center');
-    catch
-        cfg.plate = struct();
+    arguments
+        R
+        q_total double
+        t_total double
+        cfg struct = struct()
+        scan_log struct = struct('k0',{},'k1',{})
     end
-end
-if ~builtin('isfield', cfg.plate, 'center'), cfg.plate.center = [0.45 0.20]; end
-if ~builtin('isfield', cfg.plate, 'size'),   cfg.plate.size   = [0.40 0.30]; end
-if ~builtin('isfield', cfg.plate, 'color'),  cfg.plate.color  = [0.72 0.75 0.78]; end
 
-if ~builtin('isfield', cfg, 'save_video'), cfg.save_video = false; end
-if ~builtin('isfield', cfg, 'video_file'), cfg.video_file = 'scan.mp4'; end
-% ---------- fin defaults ----------
+   % ---------- defaults seguros, sin isstruct ----------
+    if ~builtin('isfield', cfg, 'fps'),         cfg.fps = 30;              end
+    if ~builtin('isfield', cfg, 'trail_color'), cfg.trail_color = [0 0 0]; end
+    if ~builtin('isfield', cfg, 'trail_width'), cfg.trail_width = 1.5;     end
+    
+    % Asegurar que cfg.plate exista y sea "usabile" como struct, sin usar isstruct
+    if ~builtin('isfield', cfg, 'plate')
+        cfg.plate = struct();
+    else
+        % Si dot-indexing/fields falla, lo regeneramos como struct
+        try
+            builtin('isfield', cfg.plate, 'center');  % esto solo funciona si cfg.plate es struct
+        catch
+            cfg.plate = struct();
+        end
+    end
+    
+    % Completar defaults dentro de plate
+    if ~builtin('isfield', cfg.plate, 'center'), cfg.plate.center = [0.45 0.20]; end
+    if ~builtin('isfield', cfg.plate, 'size'),   cfg.plate.size   = [0.40 0.30]; end
+    if ~builtin('isfield', cfg.plate, 'color'),  cfg.plate.color  = [0.72 0.75 0.78]; end
+    
+    if ~builtin('isfield', cfg, 'save_video'), cfg.save_video = false;     end
+    if ~builtin('isfield', cfg, 'video_file'), cfg.video_file = 'scan.mp4'; end
+    % ---------- fin defaults ---------
 
     dt = mean(diff(t_total));
     step = max(1, round(1/(cfg.fps*dt)));   % salto de muestras para animar
@@ -156,28 +155,33 @@ if ~builtin('isfield', cfg, 'video_file'), cfg.video_file = 'scan.mp4'; end
 
     % Video opcional
     if cfg.save_video
-        % asegurar carpeta de salida
-        try
-            [vidDir,~,~] = fileparts(cfg.video_file);
-            if ~isempty(vidDir) && ~exist(vidDir,'dir'), mkdir(vidDir); end
-        catch
+    % Detectar soporte de perfiles en este MATLAB
+    profs = VideoWriter.getProfiles();
+    names = string({profs.Name});
+
+    wantMP4 = endsWith(lower(cfg.video_file), ".mp4");
+    hasMP4  = any(names == "MPEG-4");
+
+    if wantMP4 && ~hasMP4
+        % Estás en Linux (o sin soporte H.264). Forzar AVI.
+        cfg.video_file = regexprep(cfg.video_file, '\.mp4$','.avi','ignorecase');
+        profile = 'Motion JPEG AVI';
+    elseif ~wantMP4 && any(names == "Motion JPEG AVI")
+        profile = 'Motion JPEG AVI';   % seguro en todos lados
+    else
+        profile = 'MPEG-4';            % Windows/mac con soporte
+        if ~endsWith(lower(cfg.video_file), ".mp4")
+            cfg.video_file = cfg.video_file + ".mp4";
         end
-        [profile, cfg.video_file] = pick_video_profile(cfg.video_file);
-        vw = VideoWriter(cfg.video_file, profile);
-        vw.FrameRate = cfg.fps;
-        % En AVI se puede subir un poco la calidad
-        try
-            if strcmpi(profile, 'Motion JPEG AVI')
-                vw.Quality = 95;
-            end
-        catch
-        end
-        open(vw);
-        % Capturar un primer frame para fijar el tamaño del video
-        try
-            writeVideo(vw, getframe(fig));
-        catch
-        end
+    end
+
+    vw = VideoWriter(cfg.video_file, profile);
+    vw.FrameRate = cfg.fps;
+    open(vw);
+end
+
+    else
+        vw = [];
     end
 
     % Animación
@@ -209,42 +213,13 @@ if ~builtin('isfield', cfg, 'video_file'), cfg.video_file = 'scan.mp4'; end
         end
         set(hBarJac,'XData',[0 wj wj 0]);
 
-        drawnow limitrate nocallbacks
+        drawnow limitrate
         if ~isempty(vw)
             writeVideo(vw, getframe(fig));
         end
     end
 
     if ~isempty(vw), close(vw); end
-end
-
-% ---------- Helpers ----------
-function [profile, outfile] = pick_video_profile(outfile)
-    % Devuelve perfil válido y corrige la extensión de archivo según soporte
-    profile = 'Motion JPEG AVI';  % default seguro
-
-    try
-        profs = VideoWriter.getProfiles();
-        names = string({profs.Name});
-    catch
-        names = string("Motion JPEG AVI");
-    end
-
-    is_mp4_supported = any(names == "MPEG-4");
-
-    if isstring(outfile), outfile = char(outfile); end
-
-    if ispc && is_mp4_supported
-        profile = 'MPEG-4';
-        if ~endsWith(lower(outfile), '.mp4')
-            outfile = [regexprep(outfile, '\.(avi|mov|m4v)$','', 'ignorecase') '.mp4'];
-        end
-    else
-        if ~endsWith(lower(outfile), '.avi')
-            outfile = [regexprep(outfile, '\.(mp4|mov|m4v)$','', 'ignorecase') '.avi'];
-        end
-        profile = 'Motion JPEG AVI';
-    end
 end
 
 function tf = checkfield(s, name)

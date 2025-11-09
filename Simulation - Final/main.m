@@ -31,7 +31,6 @@ rehash;
 % ====================================================================
 
 % --- Setup mínimo
-proj = fileparts(mfilename('fullpath')); addpath(proj); rehash;
 [R, plotopt] = robot_G11();
 R.base = eye(4);
 
@@ -111,12 +110,17 @@ cfgsim = struct( ...
     'jac_metric', 'cond', ...
     'jac_cond_max', 1000, ...
     'save_video', true, ...
-    'video_file', fullfile(outdir,'scan_fifth_try.mp4'), ...
-    'plotopt', [plotopt, {'nowrist','noshadow'}] ... % aplica estilo del robot al plot de la animación
+    'video_file', fullfile(outdir,'scan') ...   % sin extensión, el helper decide
 );
+% Usá el plotopt "oficial" y solo agregá flags que quieras:
+cfgsim.plotopt = [plotopt, {'nowrist','noshadow','noname','delay',0}];
+
+% Blindaje extra por si las moscas
+if ~isscalar(cfgsim), cfgsim = cfgsim(1); end
 
 fprintf('Iniciando animación...\n');
 simulation.animate_path(R, q_total, t_total, cfgsim, scan_log);
-fprintf('Simulación "fifth_try" completada.\n');
+
+fprintf('Simulación completada.\n');
 
 
