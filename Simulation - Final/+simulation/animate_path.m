@@ -84,18 +84,32 @@ if ~builtin('isfield', cfg, 'video_file'), cfg.video_file = 'scan.mp4'; end
 
     % Figura y robot
     fig = figure('Name','ScanArm Simulation','Color','w','Visible','on');
-    % Fijar tamaño de figura para capturas consistentes
-    try
-        set(fig,'Units','pixels');
-        pos = get(fig,'Position');
-        if checkfield(cfg,'video_size') && numel(cfg.video_size)==2
-            sz = cfg.video_size; w = sz(1); h = sz(2);
-        else
-            w = 1280; h = 720;
+    % Maximizar ventana si se solicita, o fijar tamaño si se graba video
+    if ~checkfield(cfg,'maximize'), cfg.maximize = false; end
+    if cfg.maximize
+        % Intentar maximizar usando WindowState (R2018a+); fallback si no existe
+        try
+            set(fig,'WindowState','maximized');
+        catch
+            try
+                set(fig,'Units','normalized','OuterPosition',[0 0 1 1]);
+            catch
+            end
         end
-        set(fig,'Position',[pos(1) pos(2) w h]);
-        set(fig,'Resize','off');
-    catch
+    else
+        % Fijar tamaño de figura para capturas consistentes
+        try
+            set(fig,'Units','pixels');
+            pos = get(fig,'Position');
+            if checkfield(cfg,'video_size') && numel(cfg.video_size)==2
+                sz = cfg.video_size; w = sz(1); h = sz(2);
+            else
+                w = 1280; h = 720;
+            end
+            set(fig,'Position',[pos(1) pos(2) w h]);
+            set(fig,'Resize','off');
+        catch
+        end
     end
     % Aplicar estilo de plot del robot, si fue provisto
     if checkfield(cfg,'plotopt') && ~isempty(cfg.plotopt)
