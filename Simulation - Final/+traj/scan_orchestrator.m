@@ -35,7 +35,6 @@ function [q_total, t_total, scan_log] = scan_orchestrator(R, cfg, q_init)
     scan_log = struct('k0',{},'k1',{},'T0',{},'T1',{},'ta',{},'tc',{},'dt',{});
     
     
-    % --- INICIO DE LA MODIFICACIÓN ---
     if nargin < 3 || isempty(q_init)
         % Fallback si no se pasa q_init (comportamiento anterior)
         fprintf('ADVERTENCIA: No se proveyó q_init. Usando q_last = zeros().\n');
@@ -44,7 +43,6 @@ function [q_total, t_total, scan_log] = scan_orchestrator(R, cfg, q_init)
         % Comportamiento deseado: empezar desde el q_init provisto
         q_last = q_init;
     end
-    % --- FIN DE LA MODIFICACIÓN ---
     
     
     t_now = 0.0;

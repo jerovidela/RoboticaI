@@ -119,6 +119,22 @@ cfgsim.plotopt = [plotopt, {'nowrist','noshadow','noname','delay',0}];
 % Blindaje extra por si las moscas
 if ~isscalar(cfgsim), cfgsim = cfgsim(1); end
 
+% Preguntar si se desea mostrar la animación
+% Aceptar sólo y/Y (sí) o n/N (no); reintentar si es inválido
+resp = '';
+while true
+    resp = strtrim(input('Mostrar animación [y/n]: ', 's'));
+    if ~isempty(resp)
+        c = lower(resp(1));
+        if c=='y' || c=='n', break; end
+    end
+    fprintf('Entrada inválida. Ingrese "y" o "n".\n');
+end
+if lower(resp(1))=='n'
+    fprintf('Animación omitida por el usuario.\n');
+    return;
+end
+
 fprintf('Iniciando animación...\n');
 simulation.animate_path(R, q_total, t_total, cfgsim, scan_log);
 
