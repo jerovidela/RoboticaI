@@ -159,21 +159,21 @@ while ~out
     istream = input(prompt,"s");
     if istream == 's' || istream == 'S'
         animation_flag = true;
+        
+        fprintf("\n[OK]: SI se muestra animación.\n")
+        R.plot(Q_all, plotopt{:},'delay', 0.01, 'trail', 'r-');
+        
         out = true;
-        fprontf("\n[OK]: SI se muestra animación.\n")
     elseif istream == 'n' || istream == 'N'
         animation_flag = false;
+        fprintf("\n[OK]: NO se muestra animación.\n")
+
         out = true;
-        fprontf("\n[OK]: NO se muestra animación.\n")
     else
         fprintf('Opción inválida.\nVuelva a intentar.\n')
         pause(2)
-        clc;
-    end
-    
-    if animation_flag
-        R.plot(Q_all, plotopt{:},'delay', 0.01, 'trail', 'r-');
         out = false;
+        clc;
     end
 end
 
@@ -318,25 +318,29 @@ else
 end
 %%
 
- 
-figure('Name','Joint space')
-% subplot(3,1,1); plot(t, Q);   grid on; ylabel('q [rad]');
-% subplot(3,1,2); plot(t, Qd);  grid on; ylabel('qd [rad/s]');
-% subplot(3,1,3); plot(t, Qdd); grid on; ylabel('qdd [rad/s^2]'); xlabel('t [s]');
+n = size(Q,2);                  % = 6
+C = lines(n);
 
-C = [0.00 0.45 0.74;   % X
- 0.85 0.33 0.10;   % Y
- 0.47 0.67 0.19];  % Z
+figure('Name','Joint space','Color','w');
 
-figure('Name','perfil velocidad cartesiana X');
-plot(t, Q, 'LineWidth', 1.8, 'Color', C(1,:)); grid on; xlabel('t [s]'); ylabel('Vx [m/s]');
+subplot(3,1,1);
+set(gca,'ColorOrder',C); hold on; grid on; box off;
+plot(t, Q, 'LineWidth', 1.6);
+ylabel('q [rad]'); title('Posición articular');
+legend('q1','q2','q3','q4','q5','q6', 'Location','eastoutside','Box','off');
+axis tight;
 
-figure('Name','perfil velocidad cartesiana Y');
-plot(t, Qd, 'LineWidth', 1.8, 'Color', C(2,:)); grid on; xlabel('t [s]'); ylabel('Vy [m/s]');
+subplot(3,1,2);
+set(gca,'ColorOrder',C); hold on; grid on; box off;
+plot(t, Qd, 'LineWidth', 1.4);
+ylabel('dq [rad/s]'); title('Velocidad articular');
+axis tight;
 
-figure('Name','perfil velocidad cartesiana Z');
-plot(t, Qdd, 'LineWidth', 1.8, 'Color', C(3,:)); grid on; xlabel('t [s]'); ylabel('Vz [m/s]');
-
+subplot(3,1,3);
+set(gca,'ColorOrder',C); hold on; grid on; box off;
+plot(t, Qdd, 'LineWidth', 1.2);
+ylabel('ddq [rad/s^2]'); xlabel('t [s]');
+title('Aceleración articular'); axis tight;
 
 
 
