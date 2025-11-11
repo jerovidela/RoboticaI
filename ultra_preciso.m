@@ -26,8 +26,8 @@ q_current = R.ikcon(T0_init, deg2rad([10 180 0 0 0 0])); % q inicial
 P_current = P_start_base;
 
 % Añadimos el primer punto para que los arreglos no estén vacíos
-Q_all = [q_current];
-t_all = [0];
+%Q_all = [q_current];
+%t_all = [0];
 
 for i = 1:num_lines
     fprintf('Generando Línea %d...\n', i);
