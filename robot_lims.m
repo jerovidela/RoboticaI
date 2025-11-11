@@ -4,7 +4,7 @@ dh =  [ ...
     0       0.000   0.398    0      0;   % Joint 2
     0       0.000   0.213    0      0;   % Joint 3
     0       0.000   0.000    pi/2   0;   % Joint 4
-    0       0.025   0.000    pi/2   0;   % Joint 5
+    0       0.000   0.000    pi/2   0;   % Joint 5
     0       0.166   0.000    0      0];  % Joint 6
 name = 'Robot Scan Arm';
 qlim = deg2rad([ ...
