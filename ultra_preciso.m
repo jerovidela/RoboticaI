@@ -1,6 +1,4 @@
-close all; clc;
-
-%% --- Robot (RTB) ---
+close all; clc; clear;
 dh = [ 0 0.283 0    -pi/2 0;
        0 0     0.398  0   0;
        0 0     0.213  0   0;
@@ -16,12 +14,11 @@ R.tool   = transl(0,0,0);
 M = [1 1 1 1 1 0];
 R_vertical = SE3.rpy(0,pi,0);
 
-%% --- Parámetros de Escaneo ---
 num_lines = 4;      % Número total de líneas a escanear
 dy = 0.05;          % Separación entre líneas en Y (metros)
 dz = 0.02;          % Altura de elevación/descenso en Z (metros)
 vel_scan = 0.05;    % Velocidad para las líneas de escaneo (m/s)
-vel_move = 0.05;    % <-- CAMBIO: Transiciones más lentas (antes 0.1)
+vel_move = 0.05;
 dt = 0.02;          % Paso de tiempo (s) -> 50 Hz
 
 % Puntos base de la primera línea
@@ -30,11 +27,7 @@ P_end_base   = [0.5; 0; 0.15];
 scan_dist = norm(P_end_base - P_start_base);
 
 % Inicializar arreglos totales
-Q_all = [];     % Para la animación (viene del bucle IK)
-t_all = [];
-t_current = 0;
-
-% --- CÁLCULO DE LA TRAYECTORIA MULTI-SEGMENTO ---
+Q_all = []; t_all = []; t_current = 0;
 
 % Punto de partida inicial
 T0_init = SE3(P_start_base) * R_vertical;
@@ -44,7 +37,6 @@ P_current = P_start_base;
 % Añadimos el primer punto para que los arreglos no estén vacíos
 Q_all = [q_current];
 t_all = [0];
-
 
 for i = 1:num_lines
     fprintf('Generando Línea %d...\n', i);
@@ -107,8 +99,6 @@ for i = 1:num_lines
     
     % --- Segmentos 2, 3, 4: TRANSICIÓN (si no es la última línea) ---
     if i < num_lines
-        %fprintf('Generando Transición %d...\n', i);
-        
         P_lift   = P_current + [0; 0; dz];      % 2. Elevar
         P_shift  = P_lift + [0; dy; 0];         % 3. Desplazar en Y
         
@@ -128,7 +118,7 @@ for i = 1:num_lines
             T0 = SE3(P0) * R_vertical;
             Tf = SE3(Pf) * R_vertical;
             
-            T_total = Distances(j) / vel_move; % <-- Duración basada en vel_move
+            T_total = Distances(j) / vel_move;
             t_seg = (dt:dt:T_total).';
             N = length(t_seg);
             
@@ -136,7 +126,6 @@ for i = 1:num_lines
                 q0 = q_current;
                 qf = R.ikcon(Tf, q0);
 
-                % Tu lógica de IK
                 T_path = ctraj(T0, Tf, N);
                 Q_seed = jtraj(q0, qf, N);
                 Q_seg = zeros(N,6);
@@ -153,7 +142,6 @@ for i = 1:num_lines
                     q_prev = q_try;
                 end
                 
-                % Añadir a los arreglos totales
                 Q_all = [Q_all; Q_seg];
                 t_all = [t_all; t_seg + t_current];
                 
@@ -161,38 +149,23 @@ for i = 1:num_lines
                 q_current = Q_all(end, :);
                 P_current = Pf;
             end
-        end % Fin loop de 3 transiciones
-    end % Fin if i < num_lines
-end % Fin loop principal de líneas
+        end 
+    end 
+end
 
-fprintf('Generación de trayectoria completada. Total %d puntos.\n', length(t_all));
-
-%% --- Animación (Trayectoria IK total) ---
 R.plot(Q_all, 'delay', 0.01, 'trail', 'r-');
 
-
-%% --- Preparación para Análisis (BASADO EN IK) ---
-% Usamos la trayectoria Q_all (IK) como la trayectoria de referencia
 Q = Q_all;
 t = t_all;
 N = length(t);
-dt = mean(diff(t)); % Usamos el dt promedio real para los cálculos
+dt = mean(diff(t));
 
-% <-- CAMBIO: Cálculo numérico de velocidad y aceleración
-% Usamos gradient() que usa diferencias centrales y mantiene el tamaño
-fprintf('Calculando derivadas numéricas (Qd, Qdd)...\n');
-Qd = gradient(Q.', dt).';  % Transponer para aplicar gradient a cada columna (articulación)
+Qd = gradient(Q.', dt).';
 Qdd = gradient(Qd.', dt).';
 
-% --- TU CÓDIGO ANTERIOR CONTINÚA AQUÍ ---
-% (Se eliminaron los plots de Posición y Error porque Q_planificada y Q_efector
-% ahora son idénticos por definición)
-
-%% --- Cartesiano con Jacobiano ---
 v    = zeros(N,3);    w = zeros(N,3);
 a    = zeros(N,3);    alpha = zeros(N,3);
 
-% Pre-calcular Jdot (más eficiente)
 Jdot = zeros(6,6,N);
 for k = 1:N
     k_prev = max(1, k-1);
@@ -203,7 +176,7 @@ for k = 1:N
 end
 
 for k = 1:N
-    J = R.jacob0(Q(k,:));      % 6x6, {vx vy vz ωx ωy ωz} = J * qd
+    J = R.jacob0(Q(k,:));
     v(k,:) = (J(1:3,:)*Qd(k,:).').';
     w(k,:) = (J(4:6,:)*Qd(k,:).').';
 
@@ -215,17 +188,16 @@ end
 vnorm = vecnorm(v,2,2);
 anorm = vecnorm(a,2,2);
 
-%% --- Condicionamiento / Singularidades ---
 kappa = zeros(N,1);
 w_yosh = zeros(N,1);
 for k = 1:N
     J = R.jacob0(Q(k,:));
     try
         s = svd(J);
-        kappa(k) = max(s)/min(s);      % grande => mal condicionado
-        w_yosh(k) = sqrt(det(J*J.')); % chico => cerca de singularidad
+        kappa(k) = max(s)/min(s);
+        w_yosh(k) = sqrt(det(J*J.'));
     catch
-        kappa(k) = NaN; % Evitar error si J es singular
+        kappa(k) = NaN;
         w_yosh(k) = 0;
     end
 end
