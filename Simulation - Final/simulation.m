@@ -66,6 +66,8 @@ for i = 1:num_lines
         Q_seed = jtraj(q0, qf, N); % Semilla suave
         Q_seg = zeros(N,6);
         q_prev = q0;
+
+        
         for k = 1:N
             Tk = T_path(k);
             q_try = R.ikine(Tk, 'q0', Q_seed(k,:), 'mask', M, 'qlim', 1);
@@ -231,10 +233,10 @@ for k = 1:N
 end
 
 %% --- Plots rápidos ---
-figure('Name','Jacobian conditioning');  
-yyaxis left;  plot(t, kappa, 'LineWidth',1.2); grid on; ylabel('\kappa(J)'); set(gca, 'YScale', 'log');
-yyaxis right; plot(t, w_yosh, 'LineWidth',1.2); ylabel('w = \surd det(JJ^T)');
-xlabel('t [s]'); title('Condicionamiento del Jacobiano');
+% figure('Name','Jacobian conditioning');  
+% yyaxis left;  plot(t, kappa, 'LineWidth',1.2); grid on; ylabel('\kappa(J)'); set(gca, 'YScale', 'log');
+% yyaxis right; plot(t, w_yosh, 'LineWidth',1.2); ylabel('w = \surd det(JJ^T)');
+% xlabel('t [s]'); title('Condicionamiento del Jacobiano');
 
 %%
 
@@ -409,7 +411,7 @@ function [R, plotopt, q_home] = robot_G11(vis)
     if isfield(vis,'home_deg') && numel(vis.home_deg) == 6
         q_home_deg = vis.home_deg(:).';
     else
-        q_home_deg = [25 -165 45 -90 -90 0];
+        q_home_deg = [25 -140 45 -90 -90 0];
     end
     q_home = deg2rad(q_home_deg);
 
