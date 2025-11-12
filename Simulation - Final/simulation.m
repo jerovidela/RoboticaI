@@ -1,6 +1,6 @@
 close all; clc; clear;
 
-[R, plotopt] = robot_G11();
+[R, plotopt, q_home] = robot_G11();
 
 M = [1 1 1 1 1 0];
 R_vertical = SE3.rpy(0,pi,0);
@@ -28,7 +28,7 @@ Q_all = []; t_all = []; t_current = 0;
 
 % Punto de partida inicial
 T0_init = SE3(P_start_base) * R_vertical;
-q_current = R.ikcon(T0_init, deg2rad([10 180 0 0 0 0])); % q inicial
+q_current = R.ikcon(T0_init, q_home); % q inicial
 P_current = P_start_base;
 
 % Añadimos el primer punto para que los arreglos no estén vacíos
@@ -364,11 +364,12 @@ function [R, plotopt, q_home] = robot_G11(vis)
     name = 'Robot Scan Arm';
     qlim = deg2rad([ ...
        -170  170;    % q1
-       3.667  240;   % q2
-       -170  170;    % q3
-       -180  180;    % q4
+       -150  80;   % q2
+       -110  140;    % q3
+       -140  140;    % q4
        -120  120;    % q5
        -360  360]);  % q6
+
     offset = deg2rad([0 -270 0 0 0 0]);  % el offset de q2 representa el codo en nuestro robot
     base = transl(0,0,0);
     tool = transl(0,0,-d_tool);
